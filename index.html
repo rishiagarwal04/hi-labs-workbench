@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HiLabs Case Management Workbench</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caladea:wght@400;700&family=Carlito:wght@400;700&display=swap">
+<style>
+/* Layout: deck-style tab strip on top, one hero per screen, a single Next button at the foot of every screen. */
+:root{
+  --bg:#0B1F3A; --bg2:#0E2748; --card:#132B4F; --soft:#0F2442; --line:#2A4670; --tx:#E8F0FB; --mut:#9DB2D0;
+  --teal:#14B8C4; --tealk:#0A8C99; --red:#FF6B5E; --amber:#F2A93B; --green:#2EC48A; --blue:#6E9BFF; --violet:#A98CFF; --grey:#8FA3BF;
+  --ink:#071428; --acc:var(--teal); --hero1:#0F2A52; --hero2:#0B1F3A; --onacc:#06182F; --shadow:0 10px 28px rgba(0,0,0,.28);
+  --display:"Caladea",Cambria,Georgia,serif; --body:"Carlito",Calibri,"Segoe UI",system-ui,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#EDF2F9; --bg2:#E3EBF6; --card:#FFFFFF; --soft:#F1F5FB; --line:#CBD8E8; --tx:#0B1F3A; --mut:#4F6580;
+  --teal:#0A7F8B; --tealk:#0A8C99; --red:#C73A2D; --amber:#A8650A; --green:#157A52; --blue:#2F62D0; --violet:#5B3FB8; --grey:#5B6B80;
+  --ink:#0B1F3A; --hero1:#13386B; --hero2:#0B1F3A; --onacc:#FFFFFF; --shadow:0 8px 22px rgba(11,31,58,.10); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#EDF2F9; --bg2:#E3EBF6; --card:#FFFFFF; --soft:#F1F5FB; --line:#CBD8E8; --tx:#0B1F3A; --mut:#4F6580;
+  --teal:#0A7F8B; --tealk:#0A8C99; --red:#C73A2D; --amber:#A8650A; --green:#157A52; --blue:#2F62D0; --violet:#5B3FB8; --grey:#5B6B80;
+  --ink:#0B1F3A; --hero1:#13386B; --hero2:#0B1F3A; --onacc:#FFFFFF; --shadow:0 8px 22px rgba(11,31,58,.10); color-scheme:light}
+body[data-v="day"]{--acc:var(--amber)} body[data-v="ctx"]{--acc:var(--green)} body[data-v="act"]{--acc:var(--red)} 
+*{box-sizing:border-box} html,body{margin:0}
+body{font:15px/1.5 var(--body);background:var(--bg);color:var(--tx);min-height:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--ink);z-index:30}
+button{font:inherit;cursor:pointer;border:0;color:inherit} select,input,textarea{font:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto}
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--ink);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line)}
+.bar .in{max-width:1180px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:8px;font-family:var(--display);font-weight:700;font-size:20px;color:#fff;white-space:nowrap}
+.brand b{font-family:var(--body);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7FD6DD;font-weight:700}
+#tabs{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nv{background:#16365F;color:#B9C9DE;padding:7px 14px;font-weight:700;font-size:13px;letter-spacing:.02em;white-space:nowrap;border-radius:2px;flex:1 1 auto;text-align:center}
+.nv b{opacity:.6;margin-right:6px;font-weight:700}
+.nv:hover{background:#1D4278;color:#fff}
+.nv.on{background:var(--acc);color:var(--onacc)} .nv.on b{opacity:.8}
+.tools{display:flex;gap:6px}
+.demo{background:var(--amber);color:#0B1F3A;font-weight:800;padding:7px 14px;border-radius:2px;font-size:13px}
+.tgl{background:#16365F;color:#CFE0F4;padding:7px 12px;border-radius:2px;font-size:12px}
+main{padding-block:22px 8px;max-width:1180px;margin:0 auto;outline:0}
+.hero{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:26px 28px 24px;margin-bottom:12px;color:#fff;border-radius:4px;overflow:hidden;background:radial-gradient(900px 260px at 90% -20%,color-mix(in srgb,var(--acc) 38%,transparent),transparent 70%),linear-gradient(120deg,var(--hero1),var(--hero2));box-shadow:var(--shadow)}
+.hero::after{content:"";position:absolute;left:28px;bottom:0;width:72px;height:4px;background:var(--acc)}
+.hero h1{font:700 clamp(26px,4vw,38px)/1.12 var(--display);margin:0;color:#fff;text-wrap:balance}
+.kick{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7FD6DD;margin-bottom:6px}
+.hs{margin-top:6px;font-size:16px;color:#D5E1F2;max-width:60ch}
+.stp3{display:flex;gap:8px;align-items:center}
+.dt{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:rgba(255,255,255,.14);color:#CFE0F4}
+.dt.on{background:var(--acc);color:var(--onacc)}
+.guide{display:flex;gap:10px;background:color-mix(in srgb,var(--teal) 14%,var(--card));border-left:4px solid var(--teal);border-radius:2px;padding:10px 16px;margin-bottom:18px;color:var(--tx)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:18px;box-shadow:var(--shadow)}
+.g{display:grid;gap:16px}.g2{grid-template-columns:1.6fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.g>*{min-width:0}
+h3{margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.ch{--c:var(--grey);display:inline-flex;align-items:center;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 18%,transparent);white-space:nowrap}
+.ch.ok{--c:var(--green)}.ch.conf,.ch.bad{--c:var(--red)}.ch.unk{--c:var(--amber)}.ch.old{--c:var(--grey)}.ch.late{--c:var(--blue)}
+.kpi{display:flex;flex-direction:column;gap:2px}.kpi b{font:700 34px/1.1 var(--display)}.kpi span{color:var(--mut);font-size:13px}
+.hd,.row{display:grid;grid-template-columns:116px 1.1fr 1.6fr 1.4fr;gap:14px;align-items:center}
+.hd{padding:0 14px 6px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.row{padding:12px 14px;border:1px solid var(--line);border-left:5px solid var(--c0,var(--line));border-radius:4px;background:var(--card);margin-bottom:8px;text-align:left;width:100%;color:var(--tx)}
+.row:hover{border-color:var(--teal)}
+.row.sel{background:color-mix(in srgb,var(--blue) 14%,var(--card));box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 50%,transparent)}
+.row small,.mut{color:var(--mut)}
+.ava{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--tealk),#2F62D0);color:#fff;display:grid;place-items:center;font:700 18px var(--display)}
+.mh{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.alert{background:color-mix(in srgb,var(--red) 16%,var(--card));border:1px solid color-mix(in srgb,var(--red) 50%,transparent);border-radius:4px;padding:10px 14px;margin-bottom:14px}
+.rib{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tl{display:grid;grid-template-columns:96px 1fr auto;gap:6px 14px;align-items:start}
+.tl .d{font-weight:700;font-size:13px}.tl .dm{grid-column:1/-1;border-top:1px solid var(--line)}
+.dom{font-size:12px;color:var(--mut)}
+.f{background:var(--soft);color:var(--tx);padding:5px 14px;border-radius:99px;font-weight:700;border:1px solid var(--line)}
+.f.on{background:var(--acc);color:var(--onacc);border-color:var(--acc)}
+.cfp{border-radius:4px;padding:12px 14px;margin-bottom:12px;border:1px solid var(--line);border-left:5px solid var(--c1,var(--line))}
+.cfp>b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.cfp.r{--c1:var(--red);background:color-mix(in srgb,var(--red) 14%,var(--card))}.cfp.r>b{color:var(--red)}
+.cfp.a{--c1:var(--amber);background:color-mix(in srgb,var(--amber) 14%,var(--card))}.cfp.a>b{color:var(--amber)}
+.cfp.gr{--c1:var(--green);background:color-mix(in srgb,var(--green) 14%,var(--card))}.cfp.gr>b{color:var(--green)}
+.btn{background:var(--teal);color:var(--onacc);font-weight:800;padding:10px 18px;border-radius:3px}
+.btn.s{background:var(--soft);color:var(--tx);border:1px solid var(--line)}.btn[disabled]{opacity:.4;cursor:not-allowed}
+textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:4px;padding:10px;background:var(--soft);color:var(--tx);resize:vertical}
+.out{display:flex;gap:6px;flex-wrap:wrap}.out button{background:var(--soft);border:1px solid var(--line);border-radius:99px;padding:5px 13px;font-weight:700}
+.out button.on{background:var(--ink);color:#fff;border-color:var(--teal)}
+.task{display:flex;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--line);border-radius:4px;margin-bottom:6px;background:var(--soft)}
+.task.done span{text-decoration:line-through;color:var(--mut)}.task span{flex:1}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#fff;background:var(--tealk);padding:8px 10px}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:color-mix(in srgb,var(--tx) 4%,transparent)}
+.stp{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stp button{background:var(--soft);border:1px solid var(--line);border-radius:3px;padding:8px 14px;font-weight:700}
+.stp button.on{background:var(--teal);color:var(--onacc);border-color:var(--teal)}
+ul{margin:0;padding-left:20px}li{margin:4px 0}
+.safe{display:flex;gap:8px;flex-wrap:wrap}.safe span{background:var(--ink);color:#fff;border-radius:3px;padding:6px 11px;font-size:13px;font-weight:700}
+.sub{color:var(--mut);font-size:13px}
+.nextbar{display:flex;justify-content:flex-end;margin-top:22px}
+.nextbar .btn{padding:14px 28px;font-size:16px;background:var(--acc);box-shadow:var(--shadow)}
+.nextbar .btn::after{content:" →"}
+#spot{position:fixed;z-index:50;border-radius:6px;box-shadow:0 0 0 9999px rgba(4,10,22,.78);pointer-events:none;transition:all .35s ease;display:none}
+#tip{position:fixed;z-index:51;width:min(340px,calc(100vw - 24px));background:var(--card);color:var(--tx);border-radius:6px;padding:16px;box-shadow:0 14px 40px rgba(0,0,0,.5);display:none;border-top:4px solid var(--teal)}
+#tip h4{margin:0 0 6px;font:700 19px var(--display)}#tip p{margin:0 0 12px;color:var(--mut)}#tip .nav{display:flex;gap:8px;align-items:center}#tip .nav small{margin-right:auto;color:var(--mut)}
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:4px;z-index:60;display:none;font-weight:700;border-left:4px solid var(--teal)}
+footer{max-width:1180px;margin:18px auto 0;color:var(--mut);font-size:12px}
+@media (max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}.row,.hd{grid-template-columns:104px 1fr}.row>:nth-child(n+3),.hd>:nth-child(n+3){display:none}.hero{flex-direction:column;align-items:flex-start}.nv{flex:0 0 auto}}
+@media (prefers-reduced-motion:reduce){#spot{transition:none}}
+</style>
+</head><body>
+<header class="bar"><div class="in">
+<div class="brand">HiLabs <b>Case Management Workbench</b></div>
+<nav id="tabs" aria-label="Screens">
+<button class="nv" data-v="day"><b>1</b>My Day</button><button class="nv" data-v="ctx"><b>2</b>Member Context</button><button class="nv" data-v="act"><b>3</b>Action Workspace</button>
+</nav>
+<div class="tools"><button class="demo" id="demoBtn">▶ Demo tour</button><button class="tgl" id="tgl">Light / dark</button></div>
+</div></header>
+<main id="main" tabindex="-1"></main>
+<footer>Proposed concept, not a current HiLabs feature. All patient data is synthetic.</footer>
+<div id="spot"></div><div id="tip" role="dialog" aria-live="polite"></div><div id="toast"></div>
+<script>
+const SC={ok:"Confirmed",conf:"Conflict",bad:"Unsuccessful",unk:"Unknown",old:"Historical",late:"Delayed"};
+const P=[
+{id:"M-1001",n:"Asha Morgan",a:72,plan:"Medicare Advantage PPO",lang:"English",pcp:"Dr. Lena Brooks",sc:"Fresh heart-failure discharge",band:"Time-sensitive",bc:"red",cs:"C-2001",prog:"Transitions of Care",why:"Discharge confirmed; medication conflict; follow-up unknown; contact unverified",next:"Review meds with clinician; verify phone; confirm cardiology",
+ev:[["5 Nov 14:20","5 Nov 15:05","ADT","Discharged home after heart failure admission","ok","ADT-3001"],["5 Nov","5 Nov","Clinical","Discharge summary: follow-up and medication reconciliation advised","ok","EHR-6001"],["5 Nov","5 Nov","Meds","Furosemide 40 mg on discharge list; no fill seen yet","conf","RX-5001"],["10 Oct","11 Oct","Meds","Furosemide 20 mg on pharmacy profile","old","RX-5002"],["5 Nov","5 Nov","Labs","BNP 780 pg/mL","ok","LAB-7001"],["12 Nov","6 Nov","Appts","Cardiology follow-up: no status returned","unk","AP-8001"],["6 Nov 08:15","6 Nov","Contact","Call to primary number: no answer, number unverified","bad","CT-9001"],["21 Sep","2 Oct","Claims","Cardiology visit claim (predates discharge)","late","CL-4001"]],
+k:"Recent discharge confirmed by ADT. BNP 780 on file. Summary advises follow-up.",c:"Furosemide 40 mg vs 20 mg. Both shown side by side; no automatic winner.",u:"Cardiology status not returned (not “missed”). Phone unverified; caregiver not assumed authorised.",
+tasks:[["Review medication difference with clinician","Today"],["Verify phone (approved process)","Today"],["Confirm cardiology follow-up","12 Nov"]],
+draft:"Discharge confirmed 5 Nov 14:20 [ADT-3001]. Heart failure exacerbation; medication reconciliation advised [EHR-6001]. Furosemide 40 mg vs 20 mg: CONFLICT, referred for clinician review [RX-5001/5002]. Cardiology 12 Nov status unknown [AP-8001]. Phone unverified [CT-9001]."},
+{id:"M-1003",n:"Elena Cruz",a:59,plan:"Medicaid Managed Care",lang:"Spanish",pcp:"Dr. Sofia Nguyen",sc:"Unreachable frequent ED user",band:"Needs review",bc:"amber",cs:"C-2003",prog:"Complex Case Management",why:"ED event arrived 36 h late; no summary; phone disconnected",next:"Validate event; use approved Spanish contact route",
+ev:[["2 Nov 22:40","4 Nov 11:15","ADT","ED visit; discharge status pending; no diagnosis","late","ADT-3003"],["2 Nov","5 Nov","Clinical","ED clinical summary pending from HIE","unk","EHR-6004"],["2 Nov","6 Nov","Labs","No result returned (not a normal result)","unk","LAB-7003"],["20 Sep","31 Oct","Meds","Albuterol 90 mcg historical; no recent fill information","old","RX-5005"],["6 Nov","–","Appts","No appointment data returned","unk","AP-8003"],["5 Nov 10:00","5 Nov","Contact","Primary number disconnected","bad","CT-9004"],["15 Sep","30 Oct","Claims","Older ED claim, received late","late","CL-4003"],["1 Oct","3 Oct","SDOH","Prefers Spanish; phone may be outdated","old","SD-1003"]],
+k:"An ED visit occurred 2 Nov (alert delayed).",c:"No conflicting sources recorded.",u:"Disposition, diagnosis and appointments unknown. Daughter is not authorised to be called.",
+tasks:[["Validate event and disposition with hospital","Today"],["Verify phone via approved process, in Spanish","Today"],["Request ED summary from HIE","Tomorrow"]],
+draft:"ED visit 2 Nov 22:40, received 4 Nov 11:15 [ADT-3003]; disposition pending. ED summary not yet available [EHR-6004]. Primary number disconnected [CT-9004]. Spanish preferred [SD-1003]. Caregiver not authorised; no call to daughter until permission confirmed."},
+{id:"M-1005",n:"Ruth Coleman",a:81,plan:"Dual Eligible / Managed Care",lang:"English",pcp:"Dr. Priya Shah",sc:"Dual-eligible senior, caregiver strain",band:"Needs review",bc:"amber",cs:"C-2005",prog:"Complex Care",why:"Apixaban dose differs; home health pending; caregiver permission incomplete",next:"Review meds; verify caregiver permission; check authorisation",
+ev:[["4 Nov 10:05","4 Nov 10:25","ADT","Discharged home with services after a fall","ok","ADT-3005"],["4 Nov","4 Nov","Meds","Apixaban 5 mg: discharge list says continue","conf","RX-5007"],["15 Oct","16 Oct","Meds","Apixaban 2.5 mg on prior list","old","RX-5008"],["4 Nov","4 Nov","Labs","Creatinine 1.4 mg/dL","ok","LAB-7005"],["9 Nov","6 Nov","Appts","Post-discharge PCP visit confirmed","ok","AP-8005"],["5 Nov","6 Nov","Appts","Home health authorisation pending, not started","unk","AU-8006"],["5 Nov 18:00","5 Nov","Contact","Connected; asked to include caregiver next time","ok","CT-9006"],["15 Oct","16 Oct","SDOH","Caregiver strain; identity and consent unverified","unk","SD-1005"]],
+k:"Discharge confirmed; PCP visit 9 Nov booked; creatinine 1.4 mg/dL.",c:"Apixaban 5 mg (discharge) vs 2.5 mg (prior list).",u:"Home health authorisation pending. Caregiver identity and consent unverified.",
+tasks:[["Review apixaban difference with clinician","Today"],["Verify caregiver identity and permission","Today"],["Confirm transport to 9 Nov visit","9 Nov"]],
+draft:"Discharge confirmed 4 Nov [ADT-3005]. Apixaban 5 mg vs 2.5 mg: CONFLICT, clinician review [RX-5007/5008]. Home health authorisation pending, not started [AU-8006]. Member asked to include caregiver; identity and permission to be verified [CT-9006]."},
+{id:"M-1002",n:"Daniel Reed",a:64,plan:"Medicare Advantage HMO",lang:"English",pcp:"Dr. Omar Patel",sc:"Rising-risk diabetes, possible refill gap",band:"Needs review",bc:"amber",cs:"C-2002",prog:"Diabetes Management",why:"No metformin fill since 1 Aug; transport barrier; visit 10 Nov booked",next:"Ask about access; confirm visit support",
+ev:[["3 Nov 19:10","4 Nov 08:30","ADT","ED visit, sent home; reason not in alert","ok","ADT-3002"],["1 Aug","2 Aug","Meds","Metformin 500 mg, 30-day supply; no later fill seen","unk","RX-5003"],["12 Oct","13 Oct","Meds","Atorvastatin 20 mg, 90-day supply, current","ok","RX-5004"],["18 Oct","20 Oct","Labs","HbA1c 8.4%","ok","LAB-7002"],["20 Oct","22 Oct","Clinical","PCP note: difficulty arranging pharmacy pickup","old","EHR-6003"],["10 Nov","6 Nov","Appts","Diabetes follow-up scheduled","ok","AP-8002"],["5 Nov 17:30","5 Nov","Contact","Connected: reports transport issue for pharmacy","ok","CT-9003"],["8 Sep","19 Oct","Claims","Statin claim; claims lag about 6 weeks","late","CL-4002"]],
+k:"ED visit confirmed; statin current; visit 10 Nov booked; member reached.",c:"No conflicting sources recorded.",u:"No metformin fill since 1 Aug: a possible gap, not proof of non-adherence. ED reason unknown.",
+tasks:[["Ask about pharmacy access, delivery or alternate pharmacy","Today"],["Confirm support to attend 10 Nov visit","10 Nov"]],
+draft:"ED visit 3 Nov, sent home [ADT-3002]. HbA1c 8.4% [LAB-7002]. No metformin fill visible after 1 Aug [RX-5003]; possible access gap, to verify with member. Member reports pharmacy transport barrier [CT-9003]. Visit 10 Nov scheduled [AP-8002]."},
+{id:"M-1004",n:"Marcus Hill",a:46,plan:"Medicaid Managed Care",lang:"English",pcp:"Dr. Noah Bennett",sc:"Behavioural health + housing instability",band:"Routine follow-up",bc:"green",cs:"C-2004",prog:"Behavioral Health / Social Needs",why:"Social needs record is 8 months old; referral not confirmed",next:"Reassess housing and transport; check referral task",
+ev:[["6 Nov","–","ADT","No event returned (absence is not proof of no care)","unk","ADT-3004"],["1 Aug","4 Aug","Clinical","BH note: housing uncertainty; may be stale","old","EHR-6005"],["6 Nov","6 Nov","Meds","Sertraline 50 mg, member-reported, not reconciled","unk","RX-5006"],["8 Nov","6 Nov","Appts","BH referral sent; appointment not confirmed","unk","AP-8004"],["4 Nov 14:20","4 Nov","Contact","Voicemail; no details left","bad","CT-9005"],["6 Mar","8 Mar","SDOH","Temporary housing; transport sometimes a problem","old","SD-1004"],["12 Aug","25 Sep","Claims","Therapy visit claim","late","CL-4004"]],
+k:"Therapy claim from August; referral has been sent.",c:"No conflicting sources recorded.",u:"Current housing, food and transport unknown (assessment 8 months old). No ADT or lab feed.",
+tasks:[["Reassess housing, food and transport","This week"],["Confirm BH referral appointment","8 Nov"]],
+draft:"No ADT event returned; this is not proof of no care [ADT-3004]. Last social needs assessment 6 Mar is stale [SD-1004]. BH referral sent, appointment unconfirmed [AP-8004]. Voicemail left 4 Nov [CT-9005]; try a permitted alternative time or channel."}
+];
+let S={v:"day",p:0,flt:"All",out:{},done:{},signed:{},rev:false};
+const $=s=>document.querySelector(s),cur=()=>P[S.p];
+const ch=(c,t)=>`<span class="ch ${c}">${t}</span>`;
+const bandc={red:"var(--red)",amber:"var(--amber)",green:"var(--green)"};
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",2400)}
+const G={day:["Step 1 of 3","Choose who to work on first","Read each row left to right: how urgent, why it surfaced, what to do. Click a row to preview it on the right."],ctx:["Step 2 of 3","Understand the member in one place","Every fact shows its source and how fresh it is. Look for the Conflict and Unknown boxes first."],act:["Step 3 of 3","Act, document and follow up","AI drafts the note; the nurse reviews, edits and signs. Nothing is sent or signed without approval."]};
+const NX={day:["ctx","Next: open the member"],ctx:["act","Next: act on the case"],act:["day","Back to the queue"]};
+const nextBar=()=>`<div class="nextbar"><button class="btn" data-go="${NX[S.v][0]}">${NX[S.v][1]}</button></div>`;
+const head=(t,s)=>{const g=G[S.v];return `<div class="hero"><div><div class="kick">${g[0]}</div><h1>${t}</h1><div class="hs">${g[1]}</div></div><div class="stp3">${["day","ctx","act"].map((k,i)=>S.v==k||["day","ctx","act"].includes(S.v)?`<span class="dt ${k==S.v?"on":""}">${i+1}</span>`:"").join("")}</div></div><div class="guide"><b>How to read this screen.</b> ${g[2]}</div>`};
+const V={
+day(){const p=cur();return head("My Day","Prioritised work queue: who needs me today, and why")+
+`<div class="g g4" style="margin-bottom:14px"><div class="card kpi"><b>48</b><span>active cases</span></div><div class="card kpi"><b>6</b><span>discharge alerts since Friday</span></div><div class="card kpi"><b style="color:var(--teal)">${P.length}</b><span>cases in this demo queue</span></div><div class="card kpi"><b style="color:var(--amber)">${P.filter(x=>x.band!="Routine follow-up").length}</b><span>need action today</span></div></div>
+<div class="g g2"><div id="queue"><div class="hd"><span>Priority</span><span>Member / case</span><span>Why surfaced</span><span>Next action</span></div>${P.map((x,i)=>`<button class="row ${i==S.p?"sel":""}" data-p="${i}" style="--c0:${bandc[x.bc]}"><span class="ch" style="--c:${bandc[x.bc]}">${x.band}</span><span><b>${x.n}</b><br><small>${x.cs} · ${x.sc}</small></span><span>${x.why}</span><b style="color:var(--teal)">${x.next}</b></button>`).join("")}
+<div class="sub">Order is an operational aid, not a clinical risk score. Dismissing or reordering asks for a reason that tunes the queue.</div></div>
+<div class="card" id="rail"><div class="mh"><div class="ava">${p.n[0]}</div><div><b>${p.n} · ${p.cs}</b><br><small class="mut">${p.id} · ${p.a} · ${p.plan}</small></div></div>
+<h3 style="margin-top:12px">Why prioritised</h3><ul>${p.ev.slice(0,4).map(e=>`<li>${e[3]} ${ch(e[4],SC[e[4]])}</li>`).join("")}</ul>
+<h3 style="margin-top:12px">Source freshness</h3><div class="rib">${p.ev.slice(0,6).map(e=>ch(e[4],e[2]+" · "+e[1])).join("")}</div>
+<div style="display:flex;gap:8px"><button class="btn" data-go="ctx">Open case</button><button class="btn s" data-t="Snoozed. Reason logged to tune the queue.">Snooze</button><button class="btn s" data-t="Dismissal needs a reason: choose one in the full build.">Dismiss…</button></div></div></div>`},
+ctx(){const p=cur();const doms=["All",...new Set(p.ev.map(e=>e[2]))];const evs=p.ev.filter(e=>S.flt=="All"||e[2]==S.flt);
+return head("Member Context","Show what is known, conflicting and missing, with the source on every fact")+
+`<div class="card mh" style="margin-bottom:12px"><div class="ava">${p.n[0]}</div><div style="flex:1"><b style="font-size:17px">${p.n}</b><br><small class="mut">${p.id} · ${p.a} · ${p.plan} · ${p.lang} · PCP ${p.pcp}</small></div>${ch("old",p.cs+" · "+p.prog)}<select id="pick" aria-label="Choose member" style="padding:8px;border-radius:8px;background:var(--soft);color:var(--tx);border:1px solid var(--line)">${P.map((x,i)=>`<option value="${i}" ${i==S.p?"selected":""}>${x.n}</option>`).join("")}</select></div>
+<div class="alert" id="review"><b>Review now:</b> ${p.why}</div>
+<div class="rib" id="rib"><span class="mut" style="font-size:12px;font-weight:700;align-self:center">Data trust ribbon on every fact:</span>${["Source","Event date","Received date","Freshness","Conflict","Availability"].map(x=>ch("late",x)).join("")}</div>
+<div class="g g2"><div class="card" id="tl"><h3>Evidence timeline</h3><div class="rib">${doms.map(d=>`<button class="f ${S.flt==d?"on":""}" data-f="${d}">${d}</button>`).join("")}</div><div class="tl">${evs.map(e=>`<span class="d">${e[0]}<br><span class="dom">rec’d ${e[1]}</span></span><span>${e[3]}<br><span class="dom">${e[2]} · ${e[5]}</span></span>${ch(e[4],SC[e[4]])}<div class="dm"></div>`).join("")}</div></div>
+<div id="cf"><div class="cfp r"><b>Conflict</b><div>${p.c}</div></div><div class="cfp a"><b>Unknown</b><div>${p.u}</div></div><div class="cfp gr"><b>Known</b><div>${p.k}</div></div>
+<div class="card"><h3>Safety rules the screen enforces</h3><div class="safe"><span>No fill seen ≠ not taken</span><span>No appointment data ≠ missed</span><span>No claim ≠ no care</span><span>Missing lab ≠ normal</span><span>Two med lists ≠ pick a dose</span></div></div></div></div>`},
+act(){const p=cur();const o=S.out[p.id],ts=S.done[p.id]||[];
+return head("Action Workspace","AI drafts, the nurse decides: outreach, documentation and follow-up in one place")+
+`<div class="card" style="margin-bottom:14px;background:var(--red);color:#fff;font-weight:700;text-align:center">Nurse approval required before any clinical action, outreach send, caregiver disclosure or signed note</div>
+<div class="g g3"><div class="card"><h3>Outreach · ${p.n}</h3><div class="alert">${p.lang} is the preferred language. Use verified contact routes only.</div><h3>Log outcome</h3><div class="out">${["Connected","Voicemail","No answer","Wrong number","Refused"].map(x=>`<button class="${o==x?"on":""}" data-o="${x}">${x}</button>`).join("")}</div><p class="sub">${o?"Logged: "+o+". It returns to contact history as evidence.":"Pick the outcome of your attempt."}</p></div>
+<div class="card" id="draft"><h3>AI note draft (needs review)</h3><textarea id="note" ${S.signed[p.id]?"disabled":""}>${p.draft}</textarea><div class="alert" style="background:color-mix(in srgb,var(--amber) 15%,var(--card));border-color:var(--amber);margin:8px 0">Flag: unsupported phrase “non-adherent” was removed.</div>
+<label id="appr"><input type="checkbox" id="rv" ${S.rev?"checked":""}> I reviewed the cited evidence</label><div style="display:flex;gap:8px;margin-top:8px"><button class="btn s" id="ed">Edit draft</button><button class="btn" id="sign" ${S.rev&&!S.signed[p.id]?"":"disabled"}>${S.signed[p.id]?"Signed":"Approve &amp; sign"}</button></div></div>
+<div class="card"><h3>Tasks &amp; outcomes</h3>${p.tasks.map((t,i)=>`<label class="task ${ts.includes(i)?"done":""}"><input type="checkbox" data-k="${i}" ${ts.includes(i)?"checked":""}><span>${t[0]}</span>${ch(ts.includes(i)?"ok":"unk",ts.includes(i)?"Done":t[1])}</label>`).join("")}<p class="sub">${ts.length}/${p.tasks.length} complete. Owner and due date kept; case stays open until closed or deferred.</p></div></div>
+<div class="g g2" style="margin-top:14px"><div class="cfp gr"><b>AI may assist with</b><div>Summarising source-linked evidence, drafting a structured note, suggesting rule-based tasks, spotting duplicate or inconsistent documentation, highlighting stale or missing data.</div></div><div class="cfp r"><b>AI must not, ever</b><div>Diagnose or recommend treatment, invent facts, turn “unknown” into “no”, choose a dose when records conflict, send outreach unapproved, or sign a note without a nurse.</div></div></div>`}
+};
+function render(){document.querySelectorAll(".nv").forEach(b=>b.classList.toggle("on",b.dataset.v==S.v));document.body.dataset.v=S.v;$("#main").innerHTML=V[S.v]()+nextBar();const m=$("#main");
+m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{S.p=+b.dataset.p;S.flt="All";render()});
+m.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>toast(b.dataset.t));
+m.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.flt=b.dataset.f;render()});
+m.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{S.out[cur().id]=b.dataset.o;toast("Outcome logged: "+b.dataset.o);render()});
+m.querySelectorAll("[data-k]").forEach(b=>b.onchange=()=>{const a=S.done[cur().id]=S.done[cur().id]||[],k=+b.dataset.k;b.checked?a.push(k):a.splice(a.indexOf(k),1);render()});
+const pk=$("#pick");if(pk)pk.onchange=()=>{S.p=+pk.value;S.flt="All";render()};
+const rv=$("#rv");if(rv){rv.onchange=()=>{S.rev=rv.checked;render()};$("#ed").onclick=()=>{$("#note").focus()};$("#sign").onclick=()=>{S.signed[cur().id]=1;S.rev=false;toast("Note signed by nurse. Outcome added to the case history.");render()}}}
+function go(v){S.v=v;render();$("#main").scrollTop=0}
+document.querySelectorAll(".nv").forEach(b=>b.onclick=()=>go(b.dataset.v));
+$("#tgl").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim().toUpperCase()=="#0B1F3A";r.dataset.theme=d?"light":"dark"};
+const T=[[null,null,"Welcome to the Workbench","A short guided tour of the prototype: queue, member context and action workspace. Use Next, or the arrow keys."],
+["day","#tabs","Three screens, one workflow","Left to right in a nurse’s day: My Day → Member Context → Action Workspace."],
+["day","#queue","1 · Explainable queue","Answers “who needs me today?” Every row has a priority band, a plain-language reason and a next action. Click any row to switch member."],
+["day","#rail","2 · Evidence at a glance","The right rail shows why a case was prioritised and how fresh each source is, before you open anything."],
+["ctx","#review","3 · Review now","One line says what matters most. It is built from facts, not a diagnosis or risk score."],
+["ctx","#rib","4 · Data trust ribbon","Every fact carries source, event date, received date, freshness, conflict and availability, so old data is never read as current."],
+["ctx","#tl","5 · Evidence timeline","Records from claims, pharmacy, ADT, labs, appointments and contacts in one place. Try the filter chips, or switch member at the top."],
+["ctx","#cf","6 · Known · Conflict · Unknown","Conflicts show side by side with no automatic winner. Missing data is “unknown”, never “none”."],
+["act","#draft","7 · AI drafts, nurse decides","The note cites its sources, unsupported phrases are flagged, and signing needs a reviewed-evidence tick."],
+["act","#appr","8 · Human approval gate","Tick the box and sign: the outcome returns to the case as new evidence. Also log an outcome and complete tasks to close the loop."],
+["act",null,"Tour complete","Explore freely. Everything here uses fictional data from the five-patient workbook. You can replay the tour anytime."]];
+let ti=-1;const sp=$("#spot"),tp=$("#tip");
+function tour(i){if(i<0||i>=T.length)return end();ti=i;const t=T[i];if(t[0]){S.p=t[0]=="day"||t[0]=="act"||t[0]=="ctx"?0:S.p;S.v=t[0];S.flt="All";render()}
+tp.style.display="block";setTimeout(()=>{const el=t[1]&&$(t[1]);let r=null;if(el){el.scrollIntoView({block:"center",behavior:"instant"});r=el.getBoundingClientRect()}
+if(r){Object.assign(sp.style,{display:"block",left:r.left-6+"px",top:r.top-6+"px",width:r.width+12+"px",height:r.height+12+"px"})}else{Object.assign(sp.style,{display:"block",left:"50%",top:"50%",width:"0",height:"0"})}
+tp.innerHTML=`<h4>${t[2]}</h4><p>${t[3]}</p><div class="nav"><small>${i+1} / ${T.length}</small><button class="btn s" id="sk">Skip</button>${i?'<button class="btn s" id="bk">Back</button>':""}<button class="btn" id="nx">${i==T.length-1?"Finish":"Next"}</button></div>`;
+const w=tp.offsetWidth,h=tp.offsetHeight,W=innerWidth,H=innerHeight;let x,y;if(!r){x=(W-w)/2;y=(H-h)/2}else{x=Math.min(Math.max(12,r.left),W-w-12);y=r.bottom+16+h<H?r.bottom+16:(r.top-h-16>12?r.top-h-16:Math.max(12,H-h-12))}
+tp.style.left=x+"px";tp.style.top=y+"px";$("#sk").onclick=end;$("#nx").onclick=()=>tour(i+1);const b=$("#bk");if(b)b.onclick=()=>tour(i-1);$("#nx").focus()},80)}
+function end(){ti=-1;sp.style.display=tp.style.display="none";S.p=0;render()}
+$("#demoBtn").onclick=()=>tour(0);
+addEventListener("keydown",e=>{if(ti<0)return;if(e.key=="Escape")end();if(e.key=="ArrowRight")tour(ti+1);if(e.key=="ArrowLeft")tour(ti-1)});
+addEventListener("resize",()=>{if(ti>=0)tour(ti)});
+render();
+</script>
+
+</body></html>
