@@ -1,0 +1,1422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HiLabs Case Management Workbench · Prototype</title>
+<style>
+:root{
+  --navy:#0B1F3A; --panel:#132B4F; --panel2:#16365F; --panel3:#1A3C70; --line:#2A4F86;
+  --teal:#0A8C99; --teal2:#14B8C4; --teal3:#7FD6DD; --coral:#E0483B; --coral2:#FF6B5E; --amber:#F2A93B;
+  --green:#2EC48A; --green2:#1E9E6A; --blue:#5B8CFF; --violet:#9B7BFF; --violet2:#6A4BC4;
+  --card:#F4F7FB; --card2:#E9EFF7; --ink:#1B2A41; --muted:#5B6B80; --rule:#D5DEEA; --text:#E8F0FA; --dim:#9FB3CE;
+  --serif:Cambria,Georgia,'Times New Roman',serif; --sans:Calibri,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--navy);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.35}
+body{min-height:100vh;background:
+ radial-gradient(900px 600px at 92% -10%,rgba(20,184,196,.16),transparent 60%),
+ radial-gradient(800px 600px at -8% 105%,rgba(46,196,138,.12),transparent 60%),var(--navy)}
+button{font:inherit;cursor:pointer}
+h1,h2,h3{font-family:var(--serif);margin:0}
+.top{position:sticky;top:0;z-index:20;background:rgba(11,31,58,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1640px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.logo{background:#fff;border-radius:8px;padding:3px 9px;font:800 19px var(--sans);letter-spacing:-.5px;color:#1B2A41}
+.logo b{color:#2F62D0}
+.brand small{color:var(--dim);font-size:12px;display:block;line-height:1.1}
+.brand strong{font-family:var(--serif);font-size:16px}
+.tabs{display:flex;gap:6px;flex:1}
+.tab{background:var(--panel2);color:#8FA9CC;border:0;border-radius:7px;padding:8px 14px;font-size:13.5px;font-weight:600;display:flex;gap:8px;align-items:center}
+.tab i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#0B1F3A;font-size:11px;color:var(--teal3)}
+.tab:hover{color:#fff}
+.tab.on{color:#0B1F3A}.tab.on i{background:#0B1F3A;color:#fff}
+.tab[data-s=day].on{background:var(--amber)}.tab[data-s=ctx].on{background:var(--green)}.tab[data-s=act].on{background:var(--coral2)}.tab[data-s=logic].on{background:var(--teal2)}
+.top-r{display:flex;gap:10px;align-items:center}
+.pill{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:6px 12px;font-size:12.5px}
+.pill:hover{border-color:var(--teal2)}
+.asof{font-size:12px;color:var(--dim);text-align:right;line-height:1.25}
+main{max-width:1640px;margin:0 auto;padding:20px 24px 60px}
+.pt-strip{display:flex;gap:10px;margin-bottom:16px;align-items:stretch;flex-wrap:wrap}
+.pt{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 14px 8px 10px;display:flex;gap:10px;align-items:center;color:var(--text);text-align:left;min-width:215px}
+.pt:hover{border-color:var(--teal2)}
+.pt.on{background:var(--panel3);border-color:var(--teal2);box-shadow:0 0 0 2px rgba(20,184,196,.25)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font:700 15px var(--serif);color:#0B1F3A}
+.pt b{display:block;font-size:14px}.pt small{color:var(--dim);font-size:11.5px}
+.screen{display:none}.screen.on{display:block}
+.h-row{display:flex;align-items:baseline;gap:14px;margin:4px 0 14px}
+.h-row h1{font-size:28px}.h-row p{margin:0;color:var(--dim)}
+.card{background:var(--card);color:var(--ink);border-radius:14px;border:1px solid var(--rule);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.dark{background:var(--panel);border:1px solid var(--line);border-radius:14px;color:var(--text)}
+.pad{padding:16px 18px}
+.lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.dark .lbl{color:var(--teal3)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{padding:14px 18px;display:flex;align-items:center;gap:14px}
+.kpi .n{font:700 38px var(--serif);color:var(--ink);min-width:58px}
+.kpi .n.live{font-size:30px;color:var(--teal)}
+.kpi b{display:block;font-size:14px}.kpi small{color:var(--muted);font-style:italic}
+.grid-day{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start}
+.qhead,.qrow{display:grid;grid-template-columns:34px 112px 190px minmax(0,1fr) 150px 210px;gap:12px;align-items:center;padding:0 16px}
+.qhead{background:var(--card2);height:34px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted);border-radius:10px;margin:12px 12px 6px}
+.qrow{margin:8px 12px;min-height:84px;background:#fff;border:1.5px solid var(--rule);border-radius:12px;cursor:pointer;transition:.15s;padding-top:10px;padding-bottom:10px}
+.qrow:hover{border-color:var(--teal2);transform:translateY(-1px)}
+.qrow.sel{border-color:#2F62D0;background:#EAF1FF;box-shadow:0 0 0 2px rgba(47,98,208,.18)}
+.qrow.gone{opacity:.45}
+.rank{width:28px;height:28px;border-radius:50%;background:var(--panel2);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.band{display:inline-block;border-radius:8px;padding:7px 10px;font-weight:700;font-size:12.5px;text-align:center;width:100%}
+.band.ts{background:var(--coral);color:#fff}.band.nr{background:var(--amber);color:#0B1F3A}.band.rn{background:var(--green2);color:#fff}
+.mem b{display:block;font-size:15px}.mem small{color:var(--muted)}
+.why{font-size:13px;color:#2b3a52}
+.next{font-size:13px;font-weight:700;color:#0A6F7A}
+.dots{display:flex;gap:5px;align-items:center}
+.dot{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;color:#0B1F3A;background:#DCE3EE;opacity:.9}
+.dot.t1.on{background:var(--coral2)}.dot.t2.on{background:var(--amber)}.dot.t3.on{background:var(--blue);color:#fff}.dot.t4.on{background:var(--teal2)}
+.pts{margin-left:6px;font:700 17px var(--serif);color:var(--ink)}.pts small{font:600 10px var(--sans);color:var(--muted);margin-left:2px}
+.foot-note{padding:6px 18px 16px;color:#B03A2E;font-weight:700;font-size:13px}
+.rail .card{margin-bottom:16px}
+.rail h3{font-size:19px}
+.rail ul{margin:8px 0 0;padding-left:18px}.rail li{margin:3px 0;font-size:13.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{display:inline-block;border-radius:7px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.c-conf{background:#C4EEDA;color:#146B47}.c-hist{background:#E3E8EF;color:#46536A}.c-conflict{background:#FACFC9;color:#9A2A20}
+.c-delay{background:#FBE3B0;color:#7A4D00}.c-unk{background:#FBE3B0;color:#7A4D00}.c-unav{background:#E3E8EF;color:#46536A}
+.c-pend{background:#FBE3B0;color:#7A4D00}.c-fail{background:#FACFC9;color:#9A2A20}.c-rep{background:#E5DEFA;color:#5B3FB8}
+.c-ok{background:#C4EEDA;color:#146B47}.c-blue{background:#D0DFFA;color:#1F4E8C}
+.btn{border:1px solid var(--rule);background:#fff;color:var(--ink);border-radius:9px;padding:9px 14px;font-weight:700;font-size:13.5px}
+.btn:hover{border-color:var(--teal)}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#fff}.btn.pri:hover{background:#0b9faf}
+.btn.dk{background:#0B1F3A;color:#fff;border-color:#0B1F3A}
+.btn.ai{background:var(--violet2);border-color:var(--violet2);color:#fff;padding:11px 16px;font-size:14.5px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.sm{padding:6px 10px;font-size:12.5px}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.ladder{padding:14px 16px}.ladder .row{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;margin-top:8px;font-size:13px;color:var(--ink)}
+.t-badge{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12px;color:#0B1F3A}
+.tag{border-radius:7px;padding:3px 8px;font-size:11px;font-weight:800;color:#0B1F3A}
+/* context */
+.ctx-head{padding:18px 22px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.ctx-head h2{font-size:30px}
+.ctx-meta{color:var(--muted);font-size:13.5px}
+.stamp{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.stamp div{background:var(--card2);border-radius:9px;padding:7px 12px;font-size:12px;color:var(--muted)}.stamp b{display:block;color:var(--ink);font-size:13.5px}
+.review{margin:14px 0;background:#FACFC9;color:#7a241b;border-radius:12px;padding:12px 18px;font-weight:700}
+.grid-ctx{display:grid;grid-template-columns:300px minmax(0,1fr) 340px;gap:16px;align-items:start}
+.snap .k{margin-top:12px}.snap .k b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);font-weight:800}
+.snap .k span{font-size:13.5px}
+.tl-filters{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px}
+.f{border:1px solid var(--rule);background:#fff;color:var(--ink);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700}
+.f.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tl{position:relative;margin:8px 0 0 6px;padding-left:22px;border-left:2px solid var(--rule)}
+.ev{position:relative;background:#fff;border:1px solid var(--rule);border-radius:11px;padding:10px 14px;margin:0 0 10px;cursor:pointer}
+.ev:before{content:"";position:absolute;left:-30px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--dot,#8FA3BF);border:2px solid #fff;box-shadow:0 0 0 1px var(--rule)}
+.ev:hover{border-color:var(--teal2)}
+.ev.hl{outline:3px solid var(--violet);animation:pulse 1.6s 2}
+@keyframes pulse{50%{outline-color:transparent}}
+.ev .d{font-size:12px;color:var(--muted);font-weight:700}
+.ev .t{font-weight:700;font-size:14.5px;margin:1px 0}
+.ev .s{font-size:12.5px;color:var(--muted)}
+.ev .lim{display:none;margin-top:8px;border-top:1px dashed var(--rule);padding-top:7px;font-size:13px;color:#2b3a52}
+.ev.open .lim{display:block}
+.ev .evh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.cflt{color:var(--ink);background:#FDECEA;border:1.5px solid var(--coral);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.cflt .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.cflt .pair div{background:#fff;border-radius:9px;padding:8px 10px;text-align:center}
+.cflt .pair b{display:block;font:700 22px var(--serif)}.cflt .pair small{color:var(--muted)}
+.unk{color:var(--ink);background:#FFF6E2;border:1.5px solid var(--amber);border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:13.5px}
+.unk b{color:#7A4D00}
+.legend{display:grid;grid-template-columns:auto 1fr;gap:7px 10px;margin-top:8px;font-size:12.5px;align-items:center}
+.na{margin:8px 0 0;padding:0;list-style:none}.na li{display:flex;gap:9px;margin:7px 0;font-size:13.5px}.na li i{font-style:normal;flex:0 0 22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800}
+/* action */
+.stepper{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:12px}
+.step{border:0;color:#fff;background:#1F4E8C;padding:13px 10px 13px 26px;font:700 15px var(--serif);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,0 100%,18px 50%);margin-right:-12px}
+.step:first-child{clip-path:polygon(0 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,0 100%)}
+.step.on{background:var(--teal)}.step.doc.on{background:var(--coral)}
+.step-detail{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.step-detail .card{padding:12px 16px;font-size:13.5px}.step-detail b{color:var(--teal)}.step-detail b.n{color:var(--coral)}
+.banner{background:var(--coral);color:#fff;font-weight:700;text-align:center;border-radius:9px;padding:9px;margin-bottom:14px}
+.grid-act{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:16px;align-items:start}
+.rowkv{display:grid;grid-template-columns:96px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:13.5px}.rowkv span{color:var(--muted)}
+.outc{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.oc{border:1px solid var(--rule);background:var(--card2);color:var(--ink);border-radius:8px;padding:7px 10px;font-weight:700;font-size:12.5px}
+.oc.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.blocked{background:#FACFC9;color:#7a241b;border-radius:9px;padding:9px 12px;font-weight:700;font-size:13px;margin:8px 0}
+.ai{position:relative;background:#F1ECFF;border:2px dashed var(--violet2);border-radius:14px;padding:14px 16px;overflow:hidden}
+.ai:before{content:"AI-GENERATED";position:absolute;inset:auto auto 96px 50%;transform:translateX(-50%) rotate(-14deg);font:800 40px var(--serif);color:rgba(106,75,196,.07);white-space:nowrap;pointer-events:none}
+.ai .badge{display:inline-flex;gap:6px;align-items:center;background:var(--violet2);color:#fff;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:800;letter-spacing:.04em}
+.ai.signed{background:#EAF8F1;border-color:var(--green2)}.ai.signed:before{content:"SIGNED BY NURSE";color:rgba(30,158,106,.12)}
+.ai .txt{margin:10px 0;font-size:14px;line-height:1.5;color:#1B2A41;min-height:120px}
+.ai textarea{width:100%;min-height:190px;font:14px/1.5 var(--sans);border:1.5px solid var(--violet2);border-radius:9px;padding:10px;background:#fff;color:var(--ink)}
+.cite{color:#2F62D0;font-weight:700;cursor:pointer;border-bottom:1px dotted #2F62D0}
+.flag{background:#FBE3B0;color:#7A4D00;border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin-bottom:10px}
+.task{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--rule);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13.5px}
+.task.done{opacity:.55}.task.done .tt{text-decoration:line-through}
+.chk{width:22px;height:22px;border-radius:6px;border:2px solid var(--teal);background:#fff;color:#fff;font-size:13px;display:grid;place-items:center;padding:0}
+.task.done .chk{background:var(--teal)}
+.task small{display:block;color:var(--muted)}
+.ai-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.may{background:#C4EEDA;border-left:8px solid var(--green2);color:#10472f;border-radius:12px;padding:12px 16px;font-size:13.5px}
+.mustnot{background:#FACFC9;border-left:8px solid var(--coral);color:#7a241b;border-radius:12px;padding:12px 16px;font-size:13.5px}
+.may b,.mustnot b{display:block;margin-bottom:4px}
+/* logic */
+.grid-logic{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+.formula{font:700 26px var(--serif);margin:6px 0 12px;letter-spacing:.2px}
+.sl{display:grid;grid-template-columns:230px 1fr 40px;gap:12px;align-items:center;margin:9px 0;font-size:13.5px}
+.sl b{font-family:var(--serif)}
+input[type=range]{width:100%;accent-color:var(--teal2)}
+.sc-row{display:grid;grid-template-columns:minmax(0,1.5fr) 30px 30px 30px 30px 120px 78px;gap:8px;align-items:center;padding:6px 10px;border-radius:8px;font-size:13px}
+.sc-row:nth-child(odd){background:rgba(255,255,255,.04)}
+.sc-h{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--teal3);font-weight:800}
+.rt{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:800;color:#0B1F3A}
+.rt.Y{background:var(--teal2)}.rt.P{background:#3A6FA8;color:#fff}.rt.N{background:transparent;border:2px solid var(--coral2);color:#FF8A80}
+.bar{display:flex;align-items:center;gap:6px}.bar i{display:block;height:8px;border-radius:5px}.bar span{font:700 13px var(--serif);min-width:32px;text-align:right}
+.vd{border-radius:8px;padding:4px 0;text-align:center;font-size:11px;font-weight:800}
+.vd.MUST{background:var(--green2);color:#fff}.vd.LATER{background:var(--amber);color:#0B1F3A}.vd.OUT{background:var(--coral);color:#fff}
+.sep{border-top:2px dashed var(--amber);margin:6px 0}
+.tally{display:flex;gap:10px;margin:10px 0}.tally div{flex:1;background:var(--panel2);border-radius:10px;padding:8px 12px;text-align:center}.tally b{font:700 26px var(--serif);display:block}
+.mx-row{display:grid;grid-template-columns:30px 1fr 30px 30px 30px 30px 54px 100px;gap:8px;align-items:center;margin-top:8px;font-size:13px;padding:6px 8px;background:rgba(255,255,255,.05);border-radius:9px}
+/* modal / toast */
+.modal-bg{position:fixed;inset:0;background:rgba(5,12,25,.7);display:none;place-items:center;z-index:50}.modal-bg.on{display:grid}
+.modal{background:#fff;color:var(--ink);border-radius:16px;padding:22px 24px;width:min(520px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal h3{font-size:22px;margin-bottom:6px}.modal label{display:flex;gap:10px;margin:10px 0;font-size:14px;align-items:flex-start}
+.modal select,.modal textarea{width:100%;padding:9px;border:1.5px solid var(--rule);border-radius:9px;font:inherit;margin-top:6px}
+.modal .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:#0B1F3A;border:1px solid var(--teal2);color:#fff;border-radius:12px;padding:11px 18px;font-weight:700;opacity:0;pointer-events:none;transition:.3s;z-index:60}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:380px;background:var(--panel);border-left:1px solid var(--line);transform:translateX(100%);transition:.25s;z-index:40;padding:70px 18px 18px;overflow:auto}
+.drawer.on{transform:none}
+.aud{border-left:3px solid var(--teal2);padding:4px 10px;margin:10px 0;font-size:13px}.aud small{color:var(--dim);display:block}
+.hint{color:var(--dim);font-size:12.5px;margin:2px 0 14px}
+@media (max-width:1280px){.grid-day,.grid-ctx,.grid-act,.grid-logic{grid-template-columns:1fr}.qhead{display:none}.qrow{grid-template-columns:30px 100px 1fr}.qrow .why,.qrow .next,.qrow .dotsc{grid-column:1/-1}.kpis{grid-template-columns:1fr 1fr}.tabs{overflow:auto}.top-in{flex-wrap:wrap}}
+
+/* ===== v3 light reskin ===== */
+:root{--bg:#EEF2F8;--shadow:0 1px 2px rgba(16,40,80,.06),0 6px 20px rgba(16,40,80,.07)}
+html,body{background:var(--bg);color:var(--ink);font-size:16px}
+body{background:linear-gradient(180deg,#F7F9FC 0,#EEF2F8 320px)}
+.top{background:rgba(255,255,255,.96);border-bottom:1px solid var(--rule);box-shadow:0 1px 0 rgba(16,40,80,.03)}
+.brand strong{color:var(--ink)}.brand small{color:var(--muted)}
+.logo{border:1px solid var(--rule)}
+.tabs{justify-content:center}
+.tab{background:#F0F4FA;color:#4A5B73;padding:9px 16px;font-size:14px;border:1px solid transparent}
+.tab i{background:#fff;color:var(--teal);border:1px solid var(--rule)}
+.tab:hover{color:var(--ink);border-color:var(--rule)}
+.tab.on,.tab[data-s].on{background:var(--ink);color:#fff}
+.tab.on i{background:var(--teal2);color:#0B1F3A;border-color:transparent}
+.pill{background:#fff;color:var(--ink);border-color:var(--rule)}.pill:hover{border-color:var(--teal)}
+.asof{color:var(--muted)}
+.pt{background:#fff;color:var(--ink);border-color:var(--rule);box-shadow:var(--shadow);border-radius:14px;padding:10px 16px 10px 10px}
+.pt small{color:var(--muted)}
+.pt.on{background:#E6F6F8;border-color:var(--teal);box-shadow:0 0 0 2px rgba(10,140,153,.18)}
+.av{color:#0B1F3A}
+.h-row h1{color:var(--ink);font-size:30px}.h-row p{color:var(--muted);font-size:15px}
+.card{border:1px solid #E1E8F2;box-shadow:var(--shadow)}
+.dark{background:#fff;color:var(--ink);border:1px solid #E1E8F2;box-shadow:var(--shadow)}
+.dark .lbl{color:var(--teal)}
+.guide{display:flex;gap:18px;align-items:center;background:#fff;border:1px solid #E1E8F2;border-left:5px solid var(--teal2);border-radius:12px;padding:12px 18px;margin:0 0 16px;box-shadow:var(--shadow);font-size:14.5px}
+.guide b{color:var(--ink)}.guide .g1{flex:1}.guide .g2{flex:1;color:#0A6F7A}.guide .g2 b{color:#0A6F7A}
+.kpi{padding:16px 20px}.kpi .n{font-size:40px}
+.qrow{border-color:#E1E8F2}.qrow.sel{background:#EAF6F8;border-color:var(--teal);box-shadow:0 0 0 2px rgba(10,140,153,.15)}
+.qhead{background:#F3F6FB}
+.band{border-radius:999px;padding:6px 10px}
+.rank{background:var(--ink)}
+.why{font-size:13.5px}
+.btn{border-radius:10px}
+.step{background:#C9D6EA;color:#34465F}.step.on{background:var(--teal);color:#fff}.step.doc.on{background:var(--coral);color:#fff}
+.sc-row:nth-child(odd){background:#F5F8FC}.sc-row{color:var(--ink)}
+.sc-h{color:var(--teal)}
+.rt.P{background:#CFE0F7;color:#1F4E8C}.rt.Y{background:#BDEFF3;color:#0A6F7A}.rt.N{border-color:var(--coral);color:var(--coral)}
+.tally div{background:#F3F6FB;color:var(--ink)}
+.mx-row{background:#F5F8FC;color:var(--ink)}
+.formula{color:var(--ink)}
+.drawer{background:#fff;color:var(--ink);border-left:1px solid var(--rule);box-shadow:-10px 0 40px rgba(16,40,80,.15)}
+.aud small{color:var(--muted)}.hint{color:var(--muted)}
+.drawer h3{color:var(--ink)}
+.toast{background:var(--ink)}
+.foot-note{color:#B03A2E}
+
+:root{color-scheme:light}
+.formula span:nth-of-type(1){color:#0A8C99!important}.formula span:nth-of-type(2){color:#1E9E6A!important}.formula span:nth-of-type(3){color:#6A4BC4!important}.formula span:nth-of-type(4){color:#C27A00!important}
+.dark [style*="teal3"]{color:var(--teal)!important}
+.dark .hint,.dark small{color:var(--muted)}
+.sl small,.sl span{color:var(--muted)}
+input[type=range]{accent-color:var(--teal)}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand"><span class="logo"><b>Hi</b>Labs</span><div><strong>Case Management Workbench</strong><small>Prototype · 5 fictional patients from the synthetic data annex</small></div></div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="top-r"><div class="asof" id="asof"></div><button class="pill" id="audBtn">Audit trail · <b id="audN">0</b></button><button class="pill" id="resetBtn">Reset demo</button></div>
+</div></header>
+<main>
+  <div class="pt-strip" id="pts"></div>
+  <section class="screen" id="s-day"></section>
+  <section class="screen" id="s-ctx"></section>
+  <section class="screen" id="s-act"></section>
+  <section class="screen" id="s-logic"></section>
+</main>
+<div class="drawer" id="drawer"><h3>Audit trail</h3><p class="hint">Every decision, dismissal and signature is logged with who, when and why.</p><div id="audList"></div></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA={
+"Patient_Summary": [
+{
+"Patient_ID": "M-1001",
+"Patient_Name": "Asha Morgan",
+"Age": "72",
+"Plan_Type": "Medicare Advantage PPO",
+"Scenario": "Fresh heart-failure discharge",
+"What the case manager should see and do at 8 am Monday": "Recent heart-failure discharge; furosemide dose differs between discharge and historical pharmacy records, appointment status is unknown, and the phone number needs verification. Review the medication discrepancy with the appropriate clinician, verify contact details, and confirm follow-up."
+},
+{
+"Patient_ID": "M-1002",
+"Patient_Name": "Daniel Reed",
+"Age": "64",
+"Plan_Type": "Medicare Advantage HMO",
+"Scenario": "Rising-risk diabetes / possible refill gap",
+"What the case manager should see and do at 8 am Monday": "HbA1c is 8.4%; no later metformin fill is visible in the available pharmacy feed, and the member reported transport difficulty. Ask about medication access, outside fills and preferred support; confirm the scheduled diabetes visit. Do not label the member non-adherent."
+},
+{
+"Patient_ID": "M-1003",
+"Patient_Name": "Elena Cruz",
+"Age": "59",
+"Plan_Type": "Medicaid Managed Care",
+"Scenario": "Unreachable frequent ED user",
+"What the case manager should see and do at 8 am Monday": "A recent ED alert arrived late, its disposition and clinical summary remain incomplete, and the primary number is disconnected. Verify the event and approved contact route in Spanish; do not contact the daughter unless permission is confirmed."
+},
+{
+"Patient_ID": "M-1004",
+"Patient_Name": "Marcus Hill",
+"Age": "46",
+"Plan_Type": "Medicaid Managed Care",
+"Scenario": "Behavioral health plus housing instability",
+"What the case manager should see and do at 8 am Monday": "The last housing/food/transport assessment is eight months old and a behavioral-health referral is not yet an appointment. Reassess current needs and barriers, then confirm whether the referral was received and schedule support."
+},
+{
+"Patient_ID": "M-1005",
+"Patient_Name": "Ruth Coleman",
+"Age": "81",
+"Plan_Type": "Dual Eligible / Managed Care",
+"Scenario": "Dual-eligible senior with caregiver strain",
+"What the case manager should see and do at 8 am Monday": "After a recent discharge, apixaban instructions conflict across medication records and home-health authorisation is pending. Review the medication discrepancy, confirm the member’s preferred caregiver involvement and permission, and check the service authorisation."
+}
+],
+"Member_Eligibility": [
+{
+"Member_ID": "M-1001",
+"Fictional_Member_Name": "Asha Morgan",
+"Record_Type": "Fictional",
+"Age": "72",
+"Plan_Type": "Medicare Advantage PPO",
+"Eligibility_Status": "Active",
+"Preferred_Language": "English",
+"Primary_Care_Provider": "Dr. Lena Brooks",
+"Programme": "Heart Failure / Transitions of Care",
+"Service_Area": "North District",
+"Assigned_Case_Manager": "Case Manager 01",
+"Profile_As_Of": "2026-11-06",
+"Important_Context": "Member phone requires verification; prior number unsuccessful",
+"Scenario": "Synthetic scenario A"
+},
+{
+"Member_ID": "M-1002",
+"Fictional_Member_Name": "Daniel Reed",
+"Record_Type": "Fictional",
+"Age": "64",
+"Plan_Type": "Medicare Advantage HMO",
+"Eligibility_Status": "Active",
+"Preferred_Language": "English",
+"Primary_Care_Provider": "Dr. Omar Patel",
+"Programme": "Diabetes / Rising Risk",
+"Service_Area": "Central District",
+"Assigned_Case_Manager": "Case Manager 02",
+"Profile_As_Of": "2026-11-06",
+"Important_Context": "Pharmacy fill gap is a signal to verify, not proof of non-adherence",
+"Scenario": "Synthetic scenario B"
+},
+{
+"Member_ID": "M-1003",
+"Fictional_Member_Name": "Elena Cruz",
+"Record_Type": "Fictional",
+"Age": "59",
+"Plan_Type": "Medicaid Managed Care",
+"Eligibility_Status": "Active",
+"Preferred_Language": "Spanish",
+"Primary_Care_Provider": "Dr. Sofia Nguyen",
+"Programme": "Frequent ED / Complex Care",
+"Service_Area": "West District",
+"Assigned_Case_Manager": "Case Manager 03",
+"Profile_As_Of": "2026-11-06",
+"Important_Context": "Primary number disconnected; daughter contact is not automatically authorised",
+"Scenario": "Synthetic scenario C"
+},
+{
+"Member_ID": "M-1004",
+"Fictional_Member_Name": "Marcus Hill",
+"Record_Type": "Fictional",
+"Age": "46",
+"Plan_Type": "Medicaid Managed Care",
+"Eligibility_Status": "Active",
+"Preferred_Language": "English",
+"Primary_Care_Provider": "Dr. Noah Bennett",
+"Programme": "Behavioral Health / Social Needs",
+"Service_Area": "South District",
+"Assigned_Case_Manager": "Case Manager 04",
+"Profile_As_Of": "2026-11-06",
+"Important_Context": "SDOH assessment is old; confirm current housing and transport situation",
+"Scenario": "Synthetic scenario D"
+},
+{
+"Member_ID": "M-1005",
+"Fictional_Member_Name": "Ruth Coleman",
+"Record_Type": "Fictional",
+"Age": "81",
+"Plan_Type": "Dual Eligible / Managed Care",
+"Eligibility_Status": "Active",
+"Preferred_Language": "English",
+"Primary_Care_Provider": "Dr. Priya Shah",
+"Programme": "Complex Care / Caregiver Support",
+"Service_Area": "North District",
+"Assigned_Case_Manager": "Case Manager 05",
+"Profile_As_Of": "2026-11-06",
+"Important_Context": "Caregiver contact details incomplete; verify consent and preferred contact",
+"Scenario": "Synthetic scenario E"
+}
+],
+"Cases": [
+{
+"Case_ID": "C-2001",
+"Member_ID": "M-1001",
+"Programme": "Transitions of Care",
+"Case_Status": "Open",
+"Case_Open_Date": "2026-11-05",
+"Last_Reviewed_Date": "2026-11-06",
+"Primary_Need": "Discharge follow-up and medication discrepancy",
+"Operational_Priority_Band": "Time-sensitive",
+"Assigned_Owner": "Case Manager 01",
+"Suggested_Next_Action": "Review medication conflict; verify contact and follow-up",
+"Workflow_Status": "New",
+"Case_Notes": "ADT discharge confirmed; medication source conflict remains"
+},
+{
+"Case_ID": "C-2002",
+"Member_ID": "M-1002",
+"Programme": "Diabetes Management",
+"Case_Status": "Open",
+"Case_Open_Date": "2026-10-20",
+"Last_Reviewed_Date": "2026-11-06",
+"Primary_Need": "Possible medication access gap",
+"Operational_Priority_Band": "Needs review",
+"Assigned_Owner": "Case Manager 02",
+"Suggested_Next_Action": "Contact member to understand refill/access situation",
+"Workflow_Status": "In progress",
+"Case_Notes": "Pharmacy gap and delayed claim; do not label non-adherent"
+},
+{
+"Case_ID": "C-2003",
+"Member_ID": "M-1003",
+"Programme": "Complex Case Management",
+"Case_Status": "Open",
+"Case_Open_Date": "2026-11-03",
+"Last_Reviewed_Date": "2026-11-06",
+"Primary_Need": "Recent ED event and outreach barrier",
+"Operational_Priority_Band": "Needs review",
+"Assigned_Owner": "Case Manager 03",
+"Suggested_Next_Action": "Validate event details and authorised contact route",
+"Workflow_Status": "Blocked",
+"Case_Notes": "ADT feed delayed; primary phone disconnected"
+},
+{
+"Case_ID": "C-2004",
+"Member_ID": "M-1004",
+"Programme": "Behavioral Health / Social Needs",
+"Case_Status": "Open",
+"Case_Open_Date": "2026-10-15",
+"Last_Reviewed_Date": "2026-11-06",
+"Primary_Need": "Confirm current social barriers and resource referral",
+"Operational_Priority_Band": "Routine follow-up",
+"Assigned_Owner": "Case Manager 04",
+"Suggested_Next_Action": "Reassess housing/transport and check resource task",
+"Workflow_Status": "Action pending",
+"Case_Notes": "SDOH record is 8 months old"
+},
+{
+"Case_ID": "C-2005",
+"Member_ID": "M-1005",
+"Programme": "Complex Care",
+"Case_Status": "Open",
+"Case_Open_Date": "2026-11-04",
+"Last_Reviewed_Date": "2026-11-06",
+"Primary_Need": "Medication transition and caregiver strain",
+"Operational_Priority_Band": "Needs review",
+"Assigned_Owner": "Case Manager 05",
+"Suggested_Next_Action": "Verify medication changes and caregiver contact permissions",
+"Workflow_Status": "New",
+"Case_Notes": "Conflicting med history; caregiver details incomplete"
+}
+],
+"ADT_Events": [
+{
+"ADT_ID": "ADT-3001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Event_Type": "Hospital discharge",
+"Event_Date_Time": "2026-11-05 14:20",
+"Received_Date_Time": "2026-11-05 15:05",
+"Facility": "Acute care hospital",
+"Disposition": "Discharged home",
+"Event_Detail": "Heart failure admission",
+"Data_Status": "Confirmed",
+"Source": "ADT feed",
+"Quality_Note": "Event received 45 minutes after event"
+},
+{
+"ADT_ID": "ADT-3002",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Event_Type": "ED visit",
+"Event_Date_Time": "2026-11-03 19:10",
+"Received_Date_Time": "2026-11-04 08:30",
+"Facility": "Regional medical centre",
+"Disposition": "ED disposition: home",
+"Event_Detail": "Reason not present in alert",
+"Data_Status": "Confirmed",
+"Source": "ADT feed",
+"Quality_Note": "Diagnosis details unavailable in event"
+},
+{
+"ADT_ID": "ADT-3003",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Event_Type": "ED visit",
+"Event_Date_Time": "2026-11-02 22:40",
+"Received_Date_Time": "2026-11-04 11:15",
+"Facility": "Westside hospital",
+"Disposition": "Discharge status pending",
+"Event_Detail": "No diagnosis in alert",
+"Data_Status": "Delayed",
+"Source": "ADT feed",
+"Quality_Note": "Received approximately 36 hours after event; verify disposition"
+},
+{
+"ADT_ID": "ADT-3004",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Event_Type": "No recent ADT event",
+"Event_Date_Time": "",
+"Received_Date_Time": "2026-11-06 07:00",
+"Facility": "ADT network",
+"Disposition": "No event returned",
+"Event_Detail": "Absence of event is not proof of no care",
+"Data_Status": "Unavailable",
+"Source": "ADT feed",
+"Quality_Note": "No event record in available feed; do not infer no care"
+},
+{
+"ADT_ID": "ADT-3005",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Event_Type": "Hospital discharge",
+"Event_Date_Time": "2026-11-04 10:05",
+"Received_Date_Time": "2026-11-04 10:25",
+"Facility": "North district hospital",
+"Disposition": "Discharged to home with services",
+"Event_Detail": "Fall and medication review noted",
+"Data_Status": "Confirmed",
+"Source": "ADT feed",
+"Quality_Note": "Caregiver support may be relevant; verify with member"
+}
+],
+"Claims": [
+{
+"Claim_ID": "CL-4001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Service_Date": "2026-09-21",
+"Received_Date": "2026-10-02",
+"Service_Location": "Outpatient cardiology",
+"Procedure_or_Service_Code": "99214",
+"Service_Description": "Cardiology follow-up",
+"Claim_Status": "Paid",
+"Interpretation_Limit": "Claim submitted before recent discharge; not current discharge evidence",
+"Source": "Claims feed"
+},
+{
+"Claim_ID": "CL-4002",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Service_Date": "2026-09-08",
+"Received_Date": "2026-10-19",
+"Service_Location": "Retail pharmacy",
+"Procedure_or_Service_Code": "RX-STATIN",
+"Service_Description": "Chronic medication claim",
+"Claim_Status": "Paid",
+"Interpretation_Limit": "Latest available claim is delayed; cannot establish current medication use",
+"Source": "Claims feed"
+},
+{
+"Claim_ID": "CL-4003",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Service_Date": "2026-09-15",
+"Received_Date": "2026-10-30",
+"Service_Location": "Emergency department",
+"Procedure_or_Service_Code": "99284",
+"Service_Description": "ED visit",
+"Claim_Status": "Paid",
+"Interpretation_Limit": "Older claim; newer ADT event arrived later",
+"Source": "Claims feed"
+},
+{
+"Claim_ID": "CL-4004",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Service_Date": "2026-08-12",
+"Received_Date": "2026-09-25",
+"Service_Location": "Behavioral health outpatient",
+"Procedure_or_Service_Code": "90834",
+"Service_Description": "Therapy visit",
+"Claim_Status": "Paid",
+"Interpretation_Limit": "No recent claim does not mean no recent care",
+"Source": "Claims feed"
+},
+{
+"Claim_ID": "CL-4005",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Service_Date": "2026-10-01",
+"Received_Date": "2026-10-29",
+"Service_Location": "Primary care",
+"Procedure_or_Service_Code": "99214",
+"Service_Description": "Medication review",
+"Claim_Status": "Paid",
+"Interpretation_Limit": "Claim predates current hospital discharge",
+"Source": "Claims feed"
+},
+{
+"Claim_ID": "CL-4006",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Service_Date": "2026-10-28",
+"Received_Date": "2026-11-25",
+"Service_Location": "Retail pharmacy",
+"Procedure_or_Service_Code": "RX-OTHER",
+"Service_Description": "Synthetic future-arriving claim",
+"Claim_Status": "Pending / not yet received",
+"Interpretation_Limit": "Included to demonstrate claims lag; do not expose as available on 06-Nov-2026",
+"Source": "Claims feed"
+}
+],
+"Pharmacy_Medications": [
+{
+"Medication_Record_ID": "RX-5001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Medication": "Furosemide",
+"Dose": "40 mg",
+"Record_Type": "Discharge medication list",
+"Event_or_Record_Date": "2026-11-05",
+"Received_Date": "2026-11-05",
+"Fill_or_Record_Status": "No fill record yet in available feed",
+"Quality_or_Conflict": "New discharge list; fill status unknown",
+"Source": "Hospital discharge summary",
+"Nurse_Interpretation": "Do not infer non-adherence"
+},
+{
+"Medication_Record_ID": "RX-5002",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Medication": "Furosemide",
+"Dose": "20 mg",
+"Record_Type": "Historical pharmacy profile",
+"Event_or_Record_Date": "2026-10-10",
+"Received_Date": "2026-10-11",
+"Fill_or_Record_Status": "Historical fill recorded",
+"Quality_or_Conflict": "Dose differs from discharge list",
+"Source": "Pharmacy feed",
+"Nurse_Interpretation": "Conflict requires nurse/pharmacist verification; do not choose automatically"
+},
+{
+"Medication_Record_ID": "RX-5003",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Medication": "Metformin",
+"Dose": "500 mg",
+"Record_Type": "Pharmacy fill",
+"Event_or_Record_Date": "2026-08-01",
+"Received_Date": "2026-08-02",
+"Fill_or_Record_Status": "30-day supply",
+"Quality_or_Conflict": "No later fill visible through 2026-11-06",
+"Source": "Pharmacy feed",
+"Nurse_Interpretation": "Possible gap; ask member about access, alternate pharmacy or outside fill"
+},
+{
+"Medication_Record_ID": "RX-5004",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Medication": "Atorvastatin",
+"Dose": "20 mg",
+"Record_Type": "Pharmacy fill",
+"Event_or_Record_Date": "2026-10-12",
+"Received_Date": "2026-10-13",
+"Fill_or_Record_Status": "90-day supply",
+"Quality_or_Conflict": "Recent fill recorded",
+"Source": "Pharmacy feed",
+"Nurse_Interpretation": "Shows not all medications have a gap"
+},
+{
+"Medication_Record_ID": "RX-5005",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Medication": "Albuterol",
+"Dose": "90 mcg",
+"Record_Type": "Medication history",
+"Event_or_Record_Date": "2026-09-20",
+"Received_Date": "2026-10-31",
+"Fill_or_Record_Status": "Historical fill recorded",
+"Quality_or_Conflict": "No recent fill information",
+"Source": "Pharmacy feed",
+"Nurse_Interpretation": "Do not infer current use or non-use"
+},
+{
+"Medication_Record_ID": "RX-5006",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Medication": "Sertraline",
+"Dose": "50 mg",
+"Record_Type": "Member-reported medication",
+"Event_or_Record_Date": "2026-11-06",
+"Received_Date": "2026-11-06",
+"Fill_or_Record_Status": "Member report; not reconciled",
+"Quality_or_Conflict": "Not verified against pharmacy or prescriber record",
+"Source": "Member report",
+"Nurse_Interpretation": "Keep source label visible"
+},
+{
+"Medication_Record_ID": "RX-5007",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Medication": "Apixaban",
+"Dose": "5 mg",
+"Record_Type": "Discharge medication list",
+"Event_or_Record_Date": "2026-11-04",
+"Received_Date": "2026-11-04",
+"Fill_or_Record_Status": "Discharge list says continue",
+"Quality_or_Conflict": "Prior list shows different instruction",
+"Source": "Hospital discharge summary",
+"Nurse_Interpretation": "Potential medication transition conflict; nurse review"
+},
+{
+"Medication_Record_ID": "RX-5008",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Medication": "Apixaban",
+"Dose": "2.5 mg",
+"Record_Type": "Prior medication list",
+"Event_or_Record_Date": "2026-10-15",
+"Received_Date": "2026-10-16",
+"Fill_or_Record_Status": "Historical list",
+"Quality_or_Conflict": "Conflicts with discharge list",
+"Source": "Prior EHR record",
+"Nurse_Interpretation": "Do not automatically overwrite"
+}
+],
+"Clinical_Records": [
+{
+"Clinical_Record_ID": "EHR-6001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Record_Type": "Discharge summary",
+"Event_or_Record_Date": "2026-11-05",
+"Received_Date": "2026-11-05",
+"Clinical_Context": "Heart failure exacerbation; discharged home",
+"Relevant_Instruction_or_Finding": "Follow-up recommended; medication reconciliation required",
+"Source": "Hospital EHR / CCD",
+"Availability_Status": "Received",
+"Quality_Note": "Discharge diagnosis present"
+},
+{
+"Clinical_Record_ID": "EHR-6002",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Record_Type": "Prior progress note",
+"Event_or_Record_Date": "2026-10-12",
+"Received_Date": "2026-10-13",
+"Clinical_Context": "Chronic heart failure",
+"Relevant_Instruction_or_Finding": "Prior medication list includes furosemide 20 mg",
+"Source": "Outpatient EHR",
+"Availability_Status": "Historical",
+"Quality_Note": "Conflicts with current discharge list"
+},
+{
+"Clinical_Record_ID": "EHR-6003",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Record_Type": "Primary care note",
+"Event_or_Record_Date": "2026-10-20",
+"Received_Date": "2026-10-22",
+"Clinical_Context": "Type 2 diabetes follow-up",
+"Relevant_Instruction_or_Finding": "Member reports difficulty arranging pharmacy pickup",
+"Source": "Outpatient EHR",
+"Availability_Status": "Received",
+"Quality_Note": "Supports asking about access; not proof of current non-adherence"
+},
+{
+"Clinical_Record_ID": "EHR-6004",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Record_Type": "ED clinical summary",
+"Event_or_Record_Date": "2026-11-02",
+"Received_Date": "2026-11-05",
+"Clinical_Context": "ED summary not yet available",
+"Relevant_Instruction_or_Finding": "Request/await clinical summary",
+"Source": "HIE",
+"Availability_Status": "Pending",
+"Quality_Note": "ADT event exists; clinical detail missing"
+},
+{
+"Clinical_Record_ID": "EHR-6005",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Record_Type": "Behavioral health note",
+"Event_or_Record_Date": "2026-08-01",
+"Received_Date": "2026-08-04",
+"Clinical_Context": "Follow-up recommended",
+"Relevant_Instruction_or_Finding": "Member discussed housing uncertainty",
+"Source": "Behavioral health provider",
+"Availability_Status": "Historical",
+"Quality_Note": "May be stale; reassess current situation"
+},
+{
+"Clinical_Record_ID": "EHR-6006",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Record_Type": "Discharge summary",
+"Event_or_Record_Date": "2026-11-04",
+"Received_Date": "2026-11-04",
+"Clinical_Context": "Fall; medication review recommended",
+"Relevant_Instruction_or_Finding": "Caregiver involvement noted; details incomplete",
+"Source": "Hospital EHR / CCD",
+"Availability_Status": "Received",
+"Quality_Note": "Confirm member preference and authorised caregiver"
+}
+],
+"Labs": [
+{
+"Lab_ID": "LAB-7001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Test_Name": "BNP",
+"Result": "780",
+"Unit": "pg/mL",
+"Event_or_Collection_Date": "2026-11-05",
+"Received_Date": "2026-11-05",
+"Source": "Hospital lab",
+"Availability_Status": "Available",
+"Interpretation_Limit": "Illustrative elevated result; interpret clinically in context"
+},
+{
+"Lab_ID": "LAB-7002",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Test_Name": "HbA1c",
+"Result": "8.4",
+"Unit": "%",
+"Event_or_Collection_Date": "2026-10-18",
+"Received_Date": "2026-10-20",
+"Source": "Outpatient lab",
+"Availability_Status": "Available",
+"Interpretation_Limit": "Trend may inform clinician review; not a diagnosis by this workbench"
+},
+{
+"Lab_ID": "LAB-7003",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Test_Name": "No lab result returned",
+"Result": "",
+"Unit": "",
+"Event_or_Collection_Date": "2026-11-02",
+"Received_Date": "2026-11-06",
+"Source": "HIE query",
+"Availability_Status": "Unavailable",
+"Interpretation_Limit": "No result returned is not a normal result"
+},
+{
+"Lab_ID": "LAB-7004",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Test_Name": "No recent lab feed",
+"Result": "",
+"Unit": "",
+"Event_or_Collection_Date": "2026-11-06",
+"Received_Date": "2026-11-06",
+"Source": "Lab interface",
+"Availability_Status": "Unavailable",
+"Interpretation_Limit": "No lab feed available for this scenario"
+},
+{
+"Lab_ID": "LAB-7005",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Test_Name": "Creatinine",
+"Result": "1.4",
+"Unit": "mg/dL",
+"Event_or_Collection_Date": "2026-11-04",
+"Received_Date": "2026-11-04",
+"Source": "Hospital lab",
+"Availability_Status": "Available",
+"Interpretation_Limit": "Show units, date and source; no automated medication adjustment"
+}
+],
+"Appointments_Authorisations": [
+{
+"Record_ID": "AP-8001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Service_or_Appointment": "Cardiology follow-up",
+"Event_or_Appointment_Date": "2026-11-12",
+"Received_Date": "2026-11-06",
+"Source": "Appointment feed",
+"Status_Detail": "No appointment status returned",
+"Status": "Unknown",
+"Interpretation_Limit": "Do not label missed; verify with member/provider"
+},
+{
+"Record_ID": "AP-8002",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Service_or_Appointment": "Diabetes follow-up",
+"Event_or_Appointment_Date": "2026-11-10",
+"Received_Date": "2026-11-06",
+"Source": "Plan scheduling feed",
+"Status_Detail": "Scheduled",
+"Status": "Confirmed",
+"Interpretation_Limit": "Check whether member can attend"
+},
+{
+"Record_ID": "AP-8003",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Service_or_Appointment": "Primary care follow-up",
+"Event_or_Appointment_Date": "",
+"Received_Date": "2026-11-06",
+"Source": "Plan scheduling feed",
+"Status_Detail": "No appointment data",
+"Status": "Unavailable",
+"Interpretation_Limit": "No feed result is not proof that no appointment exists"
+},
+{
+"Record_ID": "AP-8004",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Service_or_Appointment": "Behavioral health follow-up",
+"Event_or_Appointment_Date": "2026-11-08",
+"Received_Date": "2026-11-06",
+"Source": "Provider referral feed",
+"Status_Detail": "Referral sent; appointment not confirmed",
+"Status": "Pending",
+"Interpretation_Limit": "Follow-up task needed"
+},
+{
+"Record_ID": "AP-8005",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Service_or_Appointment": "Post-discharge PCP visit",
+"Event_or_Appointment_Date": "2026-11-09",
+"Received_Date": "2026-11-06",
+"Source": "Plan scheduling feed",
+"Status_Detail": "Scheduled",
+"Status": "Confirmed",
+"Interpretation_Limit": "Confirm transport and caregiver support"
+},
+{
+"Record_ID": "AU-8006",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Service_or_Appointment": "Home health service",
+"Event_or_Appointment_Date": "2026-11-05",
+"Received_Date": "2026-11-06",
+"Source": "Authorisation system",
+"Status_Detail": "Authorisation pending",
+"Status": "Pending",
+"Interpretation_Limit": "Do not represent service as started"
+}
+],
+"Contact_History": [
+{
+"Contact_ID": "CT-9001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Contact_Date_Time": "2026-11-06 08:15",
+"Channel": "Outbound call",
+"Contact_Target": "Primary number on file",
+"Outcome_Detail": "No answer / number not verified",
+"Outcome_Category": "Unsuccessful",
+"Language_Used": "English",
+"Member_Connected": "No",
+"Caregiver_Authorised": "No",
+"Next_Contact_Guidance": "Verify number through approved process; do not use unverified caregiver"
+},
+{
+"Contact_ID": "CT-9002",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Contact_Date_Time": "2026-11-05 16:10",
+"Channel": "Outbound call",
+"Contact_Target": "Prior number",
+"Outcome_Detail": "Number not in service",
+"Outcome_Category": "Unsuccessful",
+"Language_Used": "English",
+"Member_Connected": "No",
+"Caregiver_Authorised": "No",
+"Next_Contact_Guidance": "Contact data requires verification"
+},
+{
+"Contact_ID": "CT-9003",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Contact_Date_Time": "2026-11-05 17:30",
+"Channel": "Outbound call",
+"Contact_Target": "Member mobile on file",
+"Outcome_Detail": "Member answered; reports transport issue for pharmacy pickup",
+"Outcome_Category": "Connected",
+"Language_Used": "English",
+"Member_Connected": "Yes",
+"Caregiver_Authorised": "No",
+"Next_Contact_Guidance": "Member-reported barrier; create follow-up task"
+},
+{
+"Contact_ID": "CT-9004",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Contact_Date_Time": "2026-11-05 10:00",
+"Channel": "Outbound call",
+"Contact_Target": "Primary number on file",
+"Outcome_Detail": "Disconnected number",
+"Outcome_Category": "Unsuccessful",
+"Language_Used": "Spanish",
+"Member_Connected": "No",
+"Caregiver_Authorised": "No",
+"Next_Contact_Guidance": "Do not call daughter unless authorisation/permission is confirmed"
+},
+{
+"Contact_ID": "CT-9005",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Contact_Date_Time": "2026-11-04 14:20",
+"Channel": "Outbound call",
+"Contact_Target": "Member mobile on file",
+"Outcome_Detail": "Voicemail; no details left",
+"Outcome_Category": "Voicemail",
+"Language_Used": "English",
+"Member_Connected": "No",
+"Caregiver_Authorised": "No",
+"Next_Contact_Guidance": "Try permitted alternative time/channel; verify contact preference"
+},
+{
+"Contact_ID": "CT-9006",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Contact_Date_Time": "2026-11-05 18:00",
+"Channel": "Outbound call",
+"Contact_Target": "Member mobile on file",
+"Outcome_Detail": "Member answered; requested caregiver be included next time",
+"Outcome_Category": "Connected",
+"Language_Used": "English",
+"Member_Connected": "Yes",
+"Caregiver_Authorised": "No",
+"Next_Contact_Guidance": "Record request; verify caregiver identity and permission before sharing"
+}
+],
+"SDOH_Assessments": [
+{
+"SDOH_ID": "SD-1001",
+"Member_ID": "M-1001",
+"Case_ID": "C-2001",
+"Assessment_Date": "2026-11-05",
+"Received_Date": "2026-11-05",
+"Domain": "Transport",
+"Reported_Information": "Member reports transport available through family",
+"Information_Source": "Member reported",
+"Freshness_Status": "Current",
+"Suggested_Nurse_Check": "Confirm transport for follow-up visit"
+},
+{
+"SDOH_ID": "SD-1002",
+"Member_ID": "M-1002",
+"Case_ID": "C-2002",
+"Assessment_Date": "2026-10-20",
+"Received_Date": "2026-10-22",
+"Domain": "Transportation / medication access",
+"Reported_Information": "Member reports difficulty getting to pharmacy",
+"Information_Source": "Member reported",
+"Freshness_Status": "Recent",
+"Suggested_Nurse_Check": "Ask whether delivery, alternate pharmacy or support is preferred"
+},
+{
+"SDOH_ID": "SD-1003",
+"Member_ID": "M-1003",
+"Case_ID": "C-2003",
+"Assessment_Date": "2026-10-01",
+"Received_Date": "2026-10-03",
+"Domain": "Contact access",
+"Reported_Information": "Member prefers Spanish; primary phone may be outdated",
+"Information_Source": "Member reported / record",
+"Freshness_Status": "Needs verification",
+"Suggested_Nurse_Check": "Verify preferred contact route and language"
+},
+{
+"SDOH_ID": "SD-1004",
+"Member_ID": "M-1004",
+"Case_ID": "C-2004",
+"Assessment_Date": "2026-03-06",
+"Received_Date": "2026-03-08",
+"Domain": "Housing / food / transport",
+"Reported_Information": "Lives in temporary housing; transport sometimes a problem; food insecurity reported",
+"Information_Source": "Member reported",
+"Freshness_Status": "Stale — 8 months old",
+"Suggested_Nurse_Check": "Reassess; do not assume barriers remain unchanged"
+},
+{
+"SDOH_ID": "SD-1005",
+"Member_ID": "M-1005",
+"Case_ID": "C-2005",
+"Assessment_Date": "2026-10-15",
+"Received_Date": "2026-10-16",
+"Domain": "Caregiver support",
+"Reported_Information": "Caregiver strain noted; caregiver identity and permission incomplete",
+"Information_Source": "Assessment",
+"Freshness_Status": "Needs verification",
+"Suggested_Nurse_Check": "Ask member whom they want involved; verify consent before sharing"
+}
+]
+};
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const NOW=new Date('2026-11-06T08:00:00');
+const P=s=>s?new Date(s.replace(' ','T')):null;
+function fmt(s,withTime=true){if(!s)return '';const d=P(s);const t=s.length>10&&withTime?' '+s.slice(11,16):'';return d.getDate()+' '+MON[d.getMonth()]+t}
+function hrs(a,b){return (b-a)/36e5}
+const by=(sheet,m)=>DATA[sheet].filter(r=>r.Member_ID===m);
+const PALETTE={'M-1001':'#7FD6DD','M-1002':'#F2A93B','M-1003':'#FF6B5E','M-1004':'#9B7BFF','M-1005':'#2EC48A'};
+const members=DATA.Member_Eligibility;
+const memName=m=>members.find(x=>x.Member_ID===m).Fictional_Member_Name;
+/* ---------- state ---------- */
+const S0=()=>({screen:'day',pid:'M-1001',sel:'M-1001',gone:{},snooze:{},outcomes:{},tasks:{},signed:{},drafts:{},editing:false,audit:[],step:0,filter:'All',band:'All',sort:'points',tlOpen:{},hl:null,
+ w:{D:35,V:25,R:20,A:20}});
+let S=S0();
+function log(who,what,why){S.audit.unshift({t:new Date(NOW.getTime()+S.audit.length*60000*3+4*60000),who,what,why});$('#audN').textContent=S.audit.length}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+/* ---------- rule engine: data -> flags -> points ---------- */
+function conflicts(m){const g={};by('Pharmacy_Medications',m).forEach(r=>{(g[r.Medication]=g[r.Medication]||[]).push(r)});
+  return Object.entries(g).filter(([k,v])=>new Set(v.map(x=>x.Dose)).size>1).map(([k,v])=>({med:k,items:v}))}
+function engine(m){
+  const adt=by('ADT_Events',m),cl=by('Clinical_Records',m),ap=by('Appointments_Authorisations',m),ct=by('Contact_History',m),sd=by('SDOH_Assessments',m);
+  const why=[],f={t1:0,t2:0,t3:0,t4:0};
+  adt.forEach(a=>{if(a.Event_Date_Time&&/discharge|ED visit/i.test(a.Event_Type)&&hrs(P(a.Event_Date_Time),NOW)<=24){f.t1=1;why.push(`${a.Event_Type} ${fmt(a.Event_Date_Time)} (${a.Data_Status.toLowerCase()})`)}});
+  const cf=conflicts(m);cf.forEach(c=>{f.t2=1;why.push(`${c.med} ${c.items.map(i=>i.Dose).join(' vs ')}: sources disagree`)});
+  cl.filter(r=>r.Availability_Status==='Pending').forEach(r=>{f.t2=1;why.push(`${r.Record_Type} pending`)});
+  ap.filter(r=>/^AU/.test(r.Record_ID)&&r.Status==='Pending').forEach(r=>{f.t2=1;why.push(`${r.Service_or_Appointment} authorisation pending`)});
+  ct.filter(r=>r.Outcome_Category==='Unsuccessful').forEach(r=>{if(!f.t3)why.push(`Outreach unsuccessful: ${r.Outcome_Detail.toLowerCase()}`);f.t3=1});
+  sd.forEach(r=>{if(/access|caregiver/i.test(r.Domain)&&/Recent|Needs verification|Current/.test(r.Freshness_Status)&&!/^Contact/.test(r.Domain)){if(!f.t3)why.push(r.Domain.toLowerCase().includes('caregiver')?'Caregiver identity and permission incomplete':'Access barrier reported: '+r.Reported_Information.toLowerCase());f.t3=1}});
+  sd.filter(r=>/^Stale/.test(r.Freshness_Status)).forEach(r=>{f.t4=1;why.push(`Social needs assessment ${r.Freshness_Status.toLowerCase()}`)});
+  ap.filter(r=>!/^AU/.test(r.Record_ID)&&r.Status==='Pending').forEach(r=>{f.t4=1;why.push(`${r.Service_or_Appointment}: ${r.Status_Detail.toLowerCase()}`)});
+  ap.filter(r=>r.Status==='Unknown').forEach(r=>why.push(`${r.Service_or_Appointment} ${fmt(r.Event_or_Appointment_Date,false)}: status unknown`));
+  adt.filter(a=>a.Data_Status==='Delayed').forEach(a=>why.push(`ED alert received ${Math.floor(hrs(P(a.Event_Date_Time),P(a.Received_Date_Time)))} h after the event`));
+  const pts=f.t1*8+f.t2*4+f.t3*2+f.t4*1;
+  const band=pts>=8?'Time-sensitive':pts>=2?'Needs review':'Routine';
+  return {m,f,pts,band,why,conf:cf};
+}
+function ranked(){const lang=m=>members.find(x=>x.Member_ID===m).Preferred_Language!=='English'?1:0;
+  return members.map(x=>engine(x.Member_ID)).sort((a,b)=>b.pts-a.pts||lang(b.m)-lang(a.m))}
+const bandCls=b=>b==='Time-sensitive'?'ts':b==='Needs review'?'nr':'rn';
+/* ---------- evidence timeline ---------- */
+const CH={Confirmed:'c-conf',Historical:'c-hist',Conflict:'c-conflict',Delayed:'c-delay',Unknown:'c-unk',Unavailable:'c-unav',Pending:'c-pend',Unsuccessful:'c-fail',Reported:'c-rep',Voicemail:'c-delay',Stale:'c-hist',Recent:'c-rep',Current:'c-rep'};
+function timeline(m){
+  const E=[];const cfIds=new Set(conflicts(m).flatMap(c=>c.items.map(i=>i.Medication_Record_ID)));
+  by('ADT_Events',m).forEach(r=>E.push({k:'ADT',id:r.ADT_ID,date:r.Event_Date_Time||r.Received_Date_Time,title:`${r.Event_Type} · ${r.Facility}`,st:r.Data_Status,src:r.Source,sub:r.Event_Date_Time?`Event ${fmt(r.Event_Date_Time)} · received ${fmt(r.Received_Date_Time)} · ${r.Disposition}`:`Received ${fmt(r.Received_Date_Time)} · ${r.Disposition}`,lim:`${r.Event_Detail}. ${r.Quality_Note}.`}));
+  by('Claims',m).filter(r=>!/^Pending/.test(r.Claim_Status)).forEach(r=>{const lag=hrs(P(r.Service_Date),P(r.Received_Date))/24;E.push({k:'Claims',id:r.Claim_ID,date:r.Service_Date,title:`${r.Service_Description} · ${r.Service_Location}`,st:lag>14?'Delayed':'Historical',src:r.Source,sub:`Service ${fmt(r.Service_Date)} · received ${fmt(r.Received_Date)} (${Math.round(lag)} days later)`,lim:r.Interpretation_Limit})});
+  by('Pharmacy_Medications',m).forEach(r=>{const st=cfIds.has(r.Medication_Record_ID)?'Conflict':/Member-reported/.test(r.Record_Type)?'Reported':/Historical|Prior/.test(r.Record_Type)?'Historical':'Confirmed';E.push({k:'Meds',id:r.Medication_Record_ID,date:r.Event_or_Record_Date,title:`${r.Medication} ${r.Dose} · ${r.Record_Type}`,st,src:r.Source,sub:`${r.Fill_or_Record_Status} · received ${fmt(r.Received_Date)}`,lim:`${r.Quality_or_Conflict}. ${r.Nurse_Interpretation}.`})});
+  by('Clinical_Records',m).forEach(r=>E.push({k:'Clinical',id:r.Clinical_Record_ID,date:r.Event_or_Record_Date,title:`${r.Record_Type}: ${r.Clinical_Context}`,st:r.Availability_Status==='Received'?'Confirmed':r.Availability_Status,src:r.Source,sub:r.Relevant_Instruction_or_Finding,lim:r.Quality_Note}));
+  by('Labs',m).forEach(r=>E.push({k:'Labs',id:r.Lab_ID,date:r.Event_or_Collection_Date,title:r.Result?`${r.Test_Name} ${r.Result} ${r.Unit}`:r.Test_Name,st:r.Availability_Status==='Available'?'Confirmed':r.Availability_Status,src:r.Source,sub:`Collected ${fmt(r.Event_or_Collection_Date)} · received ${fmt(r.Received_Date)}`,lim:r.Interpretation_Limit}));
+  by('Appointments_Authorisations',m).forEach(r=>E.push({k:'Appts',id:r.Record_ID,date:r.Event_or_Appointment_Date||r.Received_Date,title:r.Service_or_Appointment,st:r.Status,src:r.Source,sub:r.Status_Detail,lim:r.Interpretation_Limit}));
+  by('Contact_History',m).forEach(r=>E.push({k:'Contact',id:r.Contact_ID,date:r.Contact_Date_Time,title:`${r.Channel} · ${r.Contact_Target}`,st:r.Outcome_Category==='Connected'?'Confirmed':r.Outcome_Category,src:'Contact history',sub:r.Outcome_Detail,lim:r.Next_Contact_Guidance}));
+  by('SDOH_Assessments',m).forEach(r=>E.push({k:'SDOH',id:r.SDOH_ID,date:r.Assessment_Date,title:`${r.Domain}`,st:/^Stale/.test(r.Freshness_Status)?'Stale':/Needs/.test(r.Freshness_Status)?'Reported':'Reported',src:r.Information_Source,sub:`${r.Reported_Information} (${r.Freshness_Status})`,lim:r.Suggested_Nurse_Check}));
+  return E.sort((a,b)=>P(a.date)-P(b.date));
+}
+const DOT={Confirmed:'#2EC48A',Historical:'#8FA3BF',Conflict:'#E0483B',Delayed:'#F2A93B',Unknown:'#F2A93B',Unavailable:'#8FA3BF',Pending:'#F2A93B',Unsuccessful:'#E0483B',Reported:'#9B7BFF',Voicemail:'#F2A93B',Stale:'#8FA3BF'};
+/* ---------- chrome ---------- */
+const TABS=[['day','My Day','1'],['ctx','Member Context','2'],['act','Action Workspace','3'],['logic','How it’s decided','4']];
+function chrome(){
+  $('#tabs').innerHTML=TABS.map(([k,l,n])=>`<button class="tab ${S.screen===k?'on':''}" data-s="${k}" data-go="${k}"><i>${n}</i>${l}</button>`).join('');
+  $('#asof').innerHTML='Profile as of <b>6 Nov 2026, 08:00</b><br>Case Manager view';
+  $('#pts').style.display=S.screen==='logic'?'none':'flex';
+  $('#pts').innerHTML=members.map(x=>{const e=engine(x.Member_ID);return `<button class="pt ${S.pid===x.Member_ID?'on':''}" data-pid="${x.Member_ID}"><span class="av" style="background:${PALETTE[x.Member_ID]}">${x.Fictional_Member_Name[0]}</span><span><b>${esc(x.Fictional_Member_Name)}</b><small>${esc(DATA.Patient_Summary.find(p=>p.Patient_ID===x.Member_ID).Scenario)}</small></span></button>`}).join('');
+  ['day','ctx','act','logic'].forEach(k=>$('#s-'+k).classList.toggle('on',S.screen===k));
+}
+/* ---------- screen 1: My Day ---------- */
+function freshChips(m){
+  const adt=by('ADT_Events',m)[0],ph=by('Pharmacy_Medications',m).filter(r=>r.Source==='Pharmacy feed').sort((a,b)=>P(b.Event_or_Record_Date)-P(a.Event_or_Record_Date))[0];
+  const cl=by('Claims',m).filter(r=>!/^Pending/.test(r.Claim_Status)).sort((a,b)=>P(b.Service_Date)-P(a.Service_Date))[0],ap=by('Appointments_Authorisations',m)[0];
+  const lag=adt.Event_Date_Time?(hrs(P(adt.Event_Date_Time),P(adt.Received_Date_Time))):null;
+  return [
+   [adt.Event_Date_Time?`ADT · ${lag<2?Math.round(lag*60)+' min':Math.round(lag)+' h'} lag`:'ADT · no event returned',adt.Data_Status==='Delayed'?'c-delay':adt.Data_Status==='Unavailable'?'c-unav':'c-conf'],
+   [ph?`Pharmacy · ${fmt(ph.Event_or_Record_Date,false)}`:'Pharmacy · none','c-hist'],
+   [cl?`Claims · ${fmt(cl.Service_Date,false)}`:'Claims · none','c-blue'],
+   [ap?`Appt feed · ${ap.Status.toLowerCase()}`:'Appt feed · none',ap&&ap.Status==='Confirmed'?'c-conf':'c-unk']];
+}
+function renderDay(){
+  let R=ranked();
+  const act=R.filter(r=>!S.gone[r.m]);
+  const tasksOpen=members.reduce((n,x)=>n+taskList(x.Member_ID).filter(t=>t.due==='Today'&&!S.tasks[t.id]).length,0);
+  const dis=R.filter(e=>e.f.t1).length+0;
+  const evOpen=R.reduce((n,e)=>n+e.conf.length+(e.f.t2&&!e.conf.length?1:0),0);
+  let rows=R.filter(r=>S.band==='All'||r.band===S.band);
+  if(S.sort==='name')rows=[...rows].sort((a,b)=>memName(a.m).localeCompare(memName(b.m)));
+  const bandsAvail=['All','Time-sensitive','Needs review','Routine'];
+  $('#s-day').innerHTML=`
+  <div class="h-row"><h1>My Day</h1><p>An explainable queue answers “who needs me today?”</p></div>
+  <div class="guide"><div class="g1">Who should I call first? The list is already sorted. Each row says <b>why</b> the person is here and the <b>next step</b>.</div><div class="g2">Click a row, read “Why prioritised” on the right, then press <b>Open case</b>.</div></div>
+  <div class="kpis">
+   <div class="card kpi"><div class="n">${members.length}</div><div><b>active demo cases</b><small>of 48 in the caselet</small></div></div>
+   <div class="card kpi"><div class="n">${DATA.ADT_Events.filter(a=>/discharge/i.test(a.Event_Type)).length}</div><div><b>new discharge alerts</b><small>from the ADT feed</small></div></div>
+   <div class="card kpi"><div class="n live">${tasksOpen}</div><div><b>tasks due today</b><small>computed from task records</small></div></div>
+   <div class="card kpi"><div class="n live">${evOpen}</div><div><b>evidence reviews open</b><small>conflicts and pending items</small></div></div>
+  </div>
+  <div class="grid-day">
+   <div class="card" style="padding-bottom:6px">
+     <div class="pad" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-bottom:0"><span class="lbl">Queue</span>
+       ${bandsAvail.map(b=>`<button class="f ${S.band===b?'on':''}" data-band="${b}">${b}</button>`).join('')}
+       <span style="margin-left:auto;font-size:12.5px;color:var(--muted)">Sort <select id="sortSel"><option value="points" ${S.sort==='points'?'selected':''}>Priority points</option><option value="name" ${S.sort==='name'?'selected':''}>Name</option></select></span></div>
+     <div class="qhead"><span></span><span>Band</span><span>Member / case</span><span>Why surfaced</span><span>Points</span><span>Next action</span></div>
+     ${rows.map((e,i)=>{const mm=members.find(x=>x.Member_ID===e.m),cs=DATA.Cases.find(c=>c.Member_ID===e.m);const gone=S.gone[e.m],sn=S.snooze[e.m];
+      return `<div class="qrow ${S.sel===e.m?'sel':''} ${gone?'gone':''}" data-sel="${e.m}">
+       <span class="rank">${i+1}</span>
+       <span><span class="band ${bandCls(e.band)}">${gone?'Dismissed':sn?'Snoozed':e.band}</span></span>
+       <span class="mem"><b>${esc(mm.Fictional_Member_Name)}</b><small>${cs.Case_ID} · ${esc(cs.Programme)}</small></span>
+       <span class="why">${esc(e.why.slice(0,3).join('; '))}</span>
+       <span class="dots dotsc">${[1,2,3,4].map(t=>`<span class="dot t${t} ${e.f['t'+t]?'on':''}">${t}</span>`).join('')}<span class="pts">${e.pts}<small>pts</small></span></span>
+       <span class="next">${esc(cs.Suggested_Next_Action)}</span></div>`}).join('')}
+     <div class="foot-note">Order is an operational aid, not a clinical risk score. Every point is shown and can be challenged.</div>
+   </div>
+   <div class="rail" id="rail">${rail()}</div>
+  </div>`;
+}
+function rail(){
+  const e=engine(S.sel),mm=members.find(x=>x.Member_ID===S.sel),cs=DATA.Cases.find(c=>c.Member_ID===S.sel);
+  const T=[['1','Event or due date today','+8',e.f.t1,'#FF6B5E','Time-sensitive'],['2','Conflict or pending item','+4',e.f.t2,'#F2A93B','Needs review'],['3','Blocked outreach / access','+2',e.f.t3,'#5B8CFF','Needs review'],['4','Overdue / unowned task','+1',e.f.t4,'#14B8C4','Routine']];
+  return `<div class="card pad"><div class="lbl">Why prioritised</div><h3>${esc(mm.Fictional_Member_Name)} · ${cs.Case_ID}</h3>
+    <ul>${e.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>
+    <div class="lbl" style="margin-top:14px">Source freshness</div><div class="chips">${freshChips(S.sel).map(([t,c])=>`<span class="chip ${c}">${esc(t)}</span>`).join('')}</div>
+    <div class="lbl" style="margin-top:14px">Suggested next step</div><p style="margin:6px 0 0;font-weight:700;color:#0A6F7A">${esc(cs.Suggested_Next_Action)}</p>
+    <div class="actions"><button class="btn pri" data-open="${S.sel}">Open case</button><button class="btn" data-snooze="${S.sel}">Snooze</button><button class="btn" data-dismiss="${S.sel}">Dismiss…</button></div>
+    <p class="hint" style="color:var(--muted);margin:10px 0 0">Dismiss and snooze both ask for a reason. Reasons feed the signal-tuning loop.</p></div>
+  <div class="card ladder"><div class="lbl">Priority points = 8·T1 + 4·T2 + 2·T3 + 1·T4</div>
+    ${T.map(([n,t,p,on,c,b])=>`<div class="row" style="${on?'':'opacity:.45'}"><span class="t-badge" style="background:${c}">${n}</span><span>${t}</span><span class="tag" style="background:${on?c:'#DCE3EE'}">${on?p:'0'}</span></div>`).join('')}
+    <div style="border-top:1px solid var(--rule);margin-top:12px;padding-top:10px;display:flex;justify-content:space-between;font-weight:700"><span>Total · ${e.band}</span><span style="font:700 22px var(--serif)">${e.pts}</span></div>
+    <p class="hint" style="color:var(--muted);margin:6px 0 0">8 &gt; 4+2+1: a higher tier always outranks every lower tier combined. Bands: 8+ Time-sensitive · 2–7 Needs review · below 2 Routine.</p></div>`;
+}
+/* ---------- screen 2: Member Context ---------- */
+function renderCtx(){
+  const m=S.pid,mm=members.find(x=>x.Member_ID===m),cs=DATA.Cases.find(c=>c.Member_ID===m),e=engine(m),adt=by('ADT_Events',m)[0];
+  const ev=timeline(m),kinds=['All',...new Set(ev.map(x=>x.k))];
+  const shown=ev.filter(x=>S.filter==='All'||x.k===S.filter);
+  const unk=ev.filter(x=>['Unknown','Unavailable','Pending'].includes(x.st));
+  const ct=by('Contact_History',m).sort((a,b)=>P(b.Contact_Date_Time)-P(a.Contact_Date_Time))[0],sd=by('SDOH_Assessments',m)[0],cl=by('Claims',m).filter(r=>!/^Pending/.test(r.Claim_Status)).sort((a,b)=>P(b.Service_Date)-P(a.Service_Date))[0];
+  const ps=DATA.Patient_Summary.find(p=>p.Patient_ID===m);
+  $('#s-ctx').innerHTML=`
+  <div class="h-row"><h1>Member Context</h1><p>Show what is known, conflicting and missing.</p></div>
+  <div class="guide"><div class="g1">Everything we know about this member in one timeline, with <b>source and age</b> on every item.</div><div class="g2">Tap any timeline card to see its limits. Red = sources disagree, amber = unknown or late.</div></div>
+  <div class="card ctx-head"><span class="av" style="background:${PALETTE[m]};width:56px;height:56px;font-size:24px">${mm.Fictional_Member_Name[0]}</span>
+   <div><h2>${esc(mm.Fictional_Member_Name)}</h2><div class="ctx-meta">${m} · ${mm.Age} · ${esc(mm.Plan_Type)} · ${mm.Eligibility_Status} · ${mm.Preferred_Language}<br>${cs.Case_ID} · ${esc(cs.Programme)} · ${cs.Case_Status} · ${cs.Assigned_Owner}</div></div>
+   <div class="stamp"><div>Event<b>${adt.Event_Date_Time?fmt(adt.Event_Date_Time):'none returned'}</b></div><div>Received<b>${fmt(adt.Received_Date_Time)}</b></div><div>Profile as of<b>${fmt(mm.Profile_As_Of,false)} 2026</b></div><div>Last reviewed<b>${fmt(cs.Last_Reviewed_Date,false)} 2026</b></div></div></div>
+  <div class="review">Review now: ${esc(e.why.slice(0,4).join(' · '))}</div>
+  <div class="grid-ctx">
+   <div class="card pad snap"><div class="lbl">Member snapshot</div>
+     <div class="k"><b>PCP</b><span>${esc(mm.Primary_Care_Provider)} · ${esc(mm.Service_Area)}</span></div>
+     <div class="k"><b>Programme</b><span>${esc(mm.Programme)}</span></div>
+     <div class="k"><b>Contact</b><span>${ct?esc(ct.Outcome_Detail)+' ('+fmt(ct.Contact_Date_Time)+')':'none'}<br><i style="color:var(--muted)">${ct?esc(ct.Next_Contact_Guidance):''}</i></span></div>
+     <div class="k"><b>Social (${esc(sd.Freshness_Status)})</b><span>${esc(sd.Reported_Information)}</span></div>
+     <div class="k"><b>Claims (delayed view)</b><span>${cl?`Last claim ${fmt(cl.Service_Date,false)}, received ${fmt(cl.Received_Date,false)}: ${esc(cl.Interpretation_Limit.toLowerCase())}`:'none'}</span></div>
+     <div class="k"><b>Important context</b><span>${esc(mm.Important_Context)}</span></div>
+     <div class="k"><b>8 am brief</b><span>${esc(ps['What the case manager should see and do at 8 am Monday'])}</span></div>
+   </div>
+   <div class="card pad"><div class="lbl">Evidence timeline · tap an item for its interpretation limit</div>
+     <div class="tl-filters">${kinds.map(k=>`<button class="f ${S.filter===k?'on':''}" data-filter="${k}">${k}</button>`).join('')}</div>
+     <div class="tl">${shown.map(x=>`<div class="ev ${S.tlOpen[x.id]?'open':''} ${S.hl===x.id?'hl':''}" id="ev-${x.id}" data-ev="${x.id}" style="--dot:${DOT[x.st]||'#8FA3BF'}">
+        <div class="evh"><div><div class="d">${fmt(x.date)} · ${x.k}</div><div class="t">${esc(x.title)}</div></div><span class="chip ${CH[x.st]||'c-hist'}">${esc(x.st)}</span></div>
+        <div class="s">${esc(x.sub)}</div><div class="s">${x.id} · ${esc(x.src)}</div><div class="lim"><b>Interpretation:</b> ${esc(x.lim)}</div></div>`).join('')}</div></div>
+   <div>
+     ${e.conf.map(c=>`<div class="cflt"><div class="lbl" style="color:#9A2A20">Conflict · ${esc(c.med.toLowerCase())}</div>
+        <div class="pair">${c.items.map(i=>`<div><b>${esc(i.Dose)}</b><small>${esc(i.Record_Type)}<br>${fmt(i.Event_or_Record_Date,false)} · ${esc(i.Source)}</small></div>`).join('')}</div>
+        <p style="margin:8px 0 0;font-size:13px">No automatic winner. Route to clinician or pharmacist; resolution is logged.</p></div>`).join('')}
+     ${unk.slice(0,3).map(u=>`<div class="unk"><b>${esc(u.st)} · ${esc(u.title)}</b><br>${esc(u.sub)}. Shown as “${esc(u.st.toLowerCase())}, verify”, never as a negative.</div>`).join('')}
+     <div class="card pad"><div class="lbl">Next actions (nurse edits)</div>
+       <ul class="na">${cs.Suggested_Next_Action.split(/;/).map((t,i)=>`<li><i>${i+1}</i><span>${esc(t.trim().replace(/^./,c=>c.toUpperCase()))}</span></li>`).join('')}</ul>
+       <div style="margin-top:12px"><button class="btn pri" data-go="act">Go to Action Workspace →</button></div></div>
+     <div class="card pad" style="margin-top:14px"><div class="lbl">Evidence status language</div>
+       <div class="legend"><span class="chip c-conf">Confirmed</span>source + timestamp<span class="chip c-hist">Historical</span>muted label + date<span class="chip c-conflict">Conflict</span>side by side, no winner<span class="chip c-delay">Delayed</span>event and received dates<span class="chip c-unk">Unknown</span>neutral; verify action<span class="chip c-unav">Unavailable</span>never inferred negative<span class="chip c-rep">Reported</span>provenance visible</div></div>
+   </div>
+  </div>`;
+}
+/* ---------- screen 3: Action Workspace ---------- */
+const STEPS=[['Review','System','Pre-assembled evidence bundle, source links, conflicts highlighted','Confirms, defers or escalates. Never auto-resolves a clinical conflict'],
+ ['Contact','System','Verified phone, language, channel, prior attempts, caregiver permission','Confirms identity, consent and the appropriate contact'],
+ ['Assess','System','Reuses known facts with source and date; shows missing fields','Validates member-reported information, updates the plan'],
+ ['Document','System','AI drafts from reviewed evidence; links facts; flags unsupported claims','Edits and approves before save or sign'],
+ ['Follow up','System','Task templates: med review, appointment check, referral check, retry','Chooses owner, due date and escalation']];
+const UNSUPPORTED={'M-1001':['non-adherent','No fill record yet is not proof of non-adherence'],'M-1002':['non-adherent','Pharmacy gap is a signal to verify, not proof of non-adherence'],'M-1003':['refuses contact','The number was disconnected; the member did not refuse'],'M-1004':['no recent care','Absence of an ADT or claim record is not proof of no care'],'M-1005':['caregiver authorised','Caregiver permission is incomplete']};
+function draftText(m){
+  const adt=by('ADT_Events',m)[0],cl=by('Clinical_Records',m),cf=conflicts(m),ap=by('Appointments_Authorisations',m),ct=by('Contact_History',m).sort((a,b)=>P(b.Contact_Date_Time)-P(a.Contact_Date_Time))[0],sd=by('SDOH_Assessments',m)[0];
+  const c=id=>`[${id}]`;let s=[];
+  s.push(adt.Event_Date_Time?`${adt.Event_Type} ${fmt(adt.Event_Date_Time)} ${c(adt.ADT_ID)} (${adt.Data_Status.toLowerCase()}, received ${fmt(adt.Received_Date_Time)}); disposition: ${adt.Disposition.toLowerCase()}.`:`No ADT event returned ${c(adt.ADT_ID)}; absence of an event is not proof of no care.`);
+  cl.forEach(r=>s.push(`${r.Record_Type} ${c(r.Clinical_Record_ID)}: ${r.Clinical_Context.toLowerCase()}; ${r.Relevant_Instruction_or_Finding.toLowerCase()} (${r.Availability_Status.toLowerCase()}).`));
+  cf.forEach(x=>s.push(`Medication conflict: ${x.med} ${x.items.map(i=>`${i.Dose} ${c(i.Medication_Record_ID)} (${i.Record_Type.toLowerCase()})`).join(' vs ')}. Not resolved by the system; referred for clinician review.`));
+  by('Pharmacy_Medications',m).filter(r=>!cf.some(x=>x.med===r.Medication)).forEach(r=>s.push(`${r.Medication} ${r.Dose} ${c(r.Medication_Record_ID)}: ${r.Fill_or_Record_Status.toLowerCase()}; ${r.Quality_or_Conflict.toLowerCase()}.`));
+  ap.forEach(r=>s.push(`${r.Service_or_Appointment}${r.Event_or_Appointment_Date?' '+fmt(r.Event_or_Appointment_Date,false):''} ${c(r.Record_ID)}: ${r.Status_Detail.toLowerCase()}.`));
+  s.push(`${fmt(ct.Contact_Date_Time)} ${c(ct.Contact_ID)}: ${ct.Outcome_Detail.toLowerCase()}. ${ct.Next_Contact_Guidance}.`);
+  s.push(`${sd.Domain} ${c(sd.SDOH_ID)}: ${sd.Reported_Information.toLowerCase()} (${sd.Freshness_Status.toLowerCase()}).`);
+  s.push('Tasks assigned with owner and due date; case stays open until closed or explicitly deferred.');
+  return s.join(' ');
+}
+function taskList(m){
+  const cs=DATA.Cases.find(c=>c.Member_ID===m),ct=by('Contact_History',m).sort((a,b)=>P(b.Contact_Date_Time)-P(a.Contact_Date_Time))[0],sd=by('SDOH_Assessments',m)[0];
+  const out=cs.Suggested_Next_Action.split(/;/).map(t=>t.trim()).filter(Boolean).map((t,i)=>({id:m+'-t'+i,t:t.replace(/^./,c=>c.toUpperCase()),due:'Today',own:cs.Assigned_Owner}));
+  out.push({id:m+'-tc',t:sd.Suggested_Nurse_Check,due:'This week',own:cs.Assigned_Owner});
+  out.push({id:m+'-tn',t:'Review and approve the AI note draft',due:'Today',own:cs.Assigned_Owner});
+  return out;
+}
+function renderAct(){
+  const m=S.pid,mm=members.find(x=>x.Member_ID===m),cs=DATA.Cases.find(c=>c.Member_ID===m);
+  const ct=by('Contact_History',m).sort((a,b)=>P(b.Contact_Date_Time)-P(a.Contact_Date_Time));
+  const authorised=ct.some(c=>c.Caregiver_Authorised==='Yes');const st=STEPS[S.step];
+  const signed=S.signed[m];const un=UNSUPPORTED[m];const tasks=taskList(m);
+  let draft=S.drafts[m]??draftText(m);
+  const html=esc(draft).replace(/\[([A-Z]{2,3}-\d{4})\]/g,(x,id)=>`<span class="cite" data-cite="${id}">[${id}]</span>`).replace(/\n/g,'<br>');
+  const last=ct[0];
+  $('#s-act').innerHTML=`
+  <div class="h-row"><h1>Action Workspace</h1><p>AI drafts, the nurse decides.</p></div>
+  <div class="guide"><div class="g1">Log what happened, check the AI draft and sign. <b>Nothing is saved until the nurse approves.</b></div><div class="g2">Pick an outcome, edit the purple draft, then press <b>Review &amp; approve</b>.</div></div>
+  <div class="stepper">${STEPS.map((s,i)=>`<button class="step ${S.step===i?'on':''} ${i===3?'doc':''}" data-step="${i}">${i+1} ${s[0]}</button>`).join('')}</div>
+  <div class="step-detail"><div class="card"><b>System</b> ${esc(st[2])}</div><div class="card"><b class="n">Nurse</b> ${esc(st[3])}</div></div>
+  <div class="banner">Nurse approval required before any clinical action, outreach send, caregiver disclosure or signed note</div>
+  <div class="grid-act">
+   <div class="card pad"><div class="lbl">Outreach · ${esc(mm.Fictional_Member_Name)} (${m})</div>
+     <div class="blocked">${esc(last.Outcome_Category==='Connected'?'Last contact connected: '+last.Outcome_Detail:'Last attempt: '+last.Outcome_Detail+' ('+last.Contact_ID+', '+fmt(last.Contact_Date_Time)+')')}</div>
+     <div class="rowkv"><span>Language</span><b>${esc(mm.Preferred_Language)} (recorded preference)</b></div>
+     <div class="rowkv"><span>Caregiver</span><b>${authorised?'Authorised':'Not authorised: do not share or call until permission is confirmed'}</b></div>
+     <div class="rowkv"><span>Next route</span><b>${esc(last.Next_Contact_Guidance)}</b></div>
+     <div class="lbl" style="margin-top:12px">Log outcome</div>
+     <div class="outc">${['Connected','Voicemail','No answer','Wrong number','Refused'].map(o=>`<button class="oc ${S.outcomes[m]===o?'on':''}" data-out="${o}">${o}</button>`).join('')}</div>
+     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn dk sm" data-call="member">Call member${mm.Preferred_Language!=='English'?' (with interpreter)':''}</button><button class="btn sm" data-call="caregiver" ${authorised?'':'data-blocked="1"'} style="${authorised?'':'opacity:.55'}">Contact caregiver</button></div>
+     <div class="lbl" style="margin-top:16px">Contact history</div>
+     ${ct.map(c=>`<div class="rowkv" style="grid-template-columns:104px 1fr"><span>${fmt(c.Contact_Date_Time)}</span><div>${esc(c.Outcome_Detail)} <span class="chip ${CH[c.Outcome_Category==='Connected'?'Confirmed':c.Outcome_Category]||'c-hist'}" style="margin-left:4px">${esc(c.Outcome_Category)}</span></div></div>`).join('')}
+   </div>
+   <div class="ai ${signed?'signed':''}">
+     <div style="display:flex;justify-content:space-between;align-items:center"><span class="badge"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 0l1.4 4.6L12 6 7.4 7.4 6 12 4.6 7.4 0 6l4.6-1.4z" fill="#fff"/></svg> AI-GENERATED · ${signed?'APPROVED':'NOT SAVED'}</span><span class="lbl" style="color:#5B3FB8">AI note draft · ${esc(mm.Fictional_Member_Name)}</span></div>
+     <div class="flag" style="margin-top:10px">Flag: unsupported phrase “${esc(un[0])}” removed. ${esc(un[1])}.</div>
+     ${S.editing&&!signed?`<textarea id="draftTa">${esc(draft)}</textarea>`:`<div class="txt">${html}</div>`}
+     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:relative">
+       ${signed?`<span class="chip c-ok">Signed ${esc(signed)}</span><button class="btn sm" data-unsign="1">Reopen</button>`:`<button class="btn" data-edit="1">${S.editing?'Save edits':'Edit draft'}</button><button class="btn ai" data-approve="1">Review &amp; approve →</button>`}
+     </div>
+     <p class="hint" style="color:#5B3FB8;margin:10px 0 0;position:relative">Cited IDs link back to the evidence timeline. Nothing is saved to the record until a nurse approves.</p>
+   </div>
+   <div class="card pad"><div class="lbl">Tasks &amp; outcomes · ${esc(mm.Fictional_Member_Name)}</div>
+     ${tasks.map(t=>{const d=S.tasks[t.id];return `<div class="task ${d?'done':''}"><button class="chk" data-task="${t.id}">${d?'✓':''}</button><div class="tt">${esc(t.t)}<small>${esc(t.own)}</small></div><span class="chip ${t.due==='Today'?'c-delay':'c-blue'}">${t.due}</span></div>`}).join('')}
+     <p class="hint" style="color:var(--muted);margin:12px 0 0">Owner and due date are required before a case can close. Tasks come from the case’s suggested next action and the latest assessment.</p>
+   </div>
+  </div>
+  <div class="ai-split"><div class="may"><b>AI may assist with</b>Summarise source-linked evidence · draft a structured note from reviewed evidence · suggest rule-based tasks · spot duplicate or inconsistent documentation · highlight stale, delayed or missing data</div>
+  <div class="mustnot"><b>AI must not, ever</b>Diagnose or recommend treatment · invent facts or turn “unknown” into “no” · choose a dose when records conflict · send unapproved outreach or share with an unauthorised caregiver · sign a note without nurse approval</div></div>`;
+}
+/* ---------- screen 4: How it's decided ---------- */
+const DS=[['Member identity & eligibility','Y','Y','Y','Y'],['Assessments / care plans','Y','Y','Y','P'],['Contact & outreach history','Y','P','Y','Y'],['ADT events','Y','P','Y','Y'],['Discharge summary / CCD','Y','Y','Y','P'],['Medical claims / encounters','Y','Y','Y','P'],['Appointments / scheduling','Y','P','Y','Y'],['Labs / results','Y','Y','P','P'],['Clinical records / diagnoses','Y','P','Y','P'],['Medication lists & fills','Y','P','Y','P'],['Authorisations / UM','Y','P','P','Y'],['SDOH / social needs','Y','P','Y','P'],['Referrals / community resources','Y','P','P','N'],['Home health / DME delivery','P','P','P','N'],['Remote monitoring / devices','P','P','N','N'],
+ ['Opaque risk score','P','N','Y','Y'],['Claim line items and costs','N','Y','Y','P'],['Full chart-notes dump','P','N','Y','P'],['Provider quality ratings','N','P','P','P'],['Consumer and social data','N','N','P','N'],['Genomic and imaging archives','N','P','N','N']];
+const V={Y:1,P:.5,N:0};
+function scoreRow(r){const w=S.w,tot=w.D+w.V+w.R+w.A||1;const s=100*(w.D*V[r[1]]+w.V*V[r[2]]+w.R*V[r[3]]+w.A*V[r[4]])/tot;const gate=r[1]==='N'||r[2]==='N';return {s,gate,verdict:gate||s<25?'OUT':s>=70?'MUST':'LATER'}}
+function renderLogic(){
+  const rows=DS.map(r=>({r,...scoreRow(r)})).sort((a,b)=>({MUST:0,LATER:1,OUT:2}[a.verdict]-{MUST:0,LATER:1,OUT:2}[b.verdict])||b.s-a.s);
+  const tally=['MUST','LATER','OUT'].map(v=>rows.filter(x=>x.verdict===v).length);const w=S.w;
+  const R=ranked();
+  $('#s-logic').innerHTML=`
+  <div class="h-row"><h1>How it’s decided</h1><p>Data priority is calculated: hard gates first, then a weighted score. Queue order uses transparent points.</p></div>
+  <div class="guide"><div class="g1">Two rules explain everything: <b>which data we ingest</b> (score) and <b>who is shown first</b> (points).</div><div class="g2">Drag a weight slider and watch the data ranking and verdicts recompute live.</div></div>
+  <div class="grid-logic">
+   <div class="dark pad"><div class="lbl">Data priority score (0–100) · drag the weights</div>
+     <div class="formula">100 × ( ${(w.D/(w.D+w.V+w.R+w.A||1)).toFixed(2)}·<span style="color:#5B8CFF">D</span> + ${(w.V/(w.D+w.V+w.R+w.A||1)).toFixed(2)}·<span style="color:#2EC48A">V</span> + ${(w.R/(w.D+w.V+w.R+w.A||1)).toFixed(2)}·<span style="color:#B9A5FF">R</span> + ${(w.A/(w.D+w.V+w.R+w.A||1)).toFixed(2)}·<span style="color:#F2A93B">A</span> )</div>
+     ${[['D','Decision impact','Does it change the nurse’s next action?'],['V','Verifiability','Can we show source, dates and any conflict?'],['R','Caseload reach','Does it matter to a meaningful share of cases?'],['A','Availability','In standard feeds, at a lag we can display?']].map(([k,n,q])=>`<div class="sl"><span><b>${n}</b><br><small style="color:var(--dim)">${q}</small></span><input type="range" min="0" max="60" value="${S.w[k]}" data-w="${k}"><b>${S.w[k]}</b></div>`).join('')}
+     <div class="hint">Rated Yes = 1, Partly = 0.5, No = 0. Hard gates: Decision = No or Verifiability = No means OUT whatever the score. MUST ≥ 70 · LATER 25–69 · OUT below 25.</div>
+     <div class="tally"><div><b style="color:#2EC48A">${tally[0]}</b>MUST</div><div><b style="color:#F2A93B">${tally[1]}</b>LATER</div><div><b style="color:#FF8A80">${tally[2]}</b>OUT</div><button class="pill" data-wreset="1">Reset weights</button></div>
+     <div class="sc-row sc-h"><span>Dataset</span><span>D</span><span>V</span><span>R</span><span>A</span><span>Score</span><span>Verdict</span></div>
+     ${rows.map((x,i)=>`${i&&x.verdict!==rows[i-1].verdict?'<div class="sep"></div>':''}<div class="sc-row"><span>${esc(x.r[0])}${x.gate?' <small style="color:#FF8A80">· gate fails</small>':''}</span>${[1,2,3,4].map(j=>`<span class="rt ${x.r[j]}">${{Y:'1',P:'.5',N:'0'}[x.r[j]]}</span>`).join('')}<span class="bar"><i style="width:${x.s*.8}px;background:${x.verdict==='MUST'?'#1E9E6A':x.verdict==='LATER'?'#F2A93B':'#E0483B'}"></i><span>${(Math.round(x.s*10)/10)}</span></span><span class="vd ${x.verdict}">${x.verdict}</span></div>`).join('')}
+   </div>
+   <div class="dark pad"><div class="lbl">Queue points · live from the five patients’ data</div>
+     <div class="formula" style="font-size:22px">Points = 8·T1 + 4·T2 + 2·T3 + 1·T4</div>
+     <div class="hint">T1 event or due date today (last 24 h) · T2 conflict or pending clinical item · T3 blocked outreach or access barrier · T4 overdue or unowned task. Ties are broken by language and interpreter lead time.</div>
+     <div class="mx-row sc-h" style="background:none"><span></span><span>Member</span><span>1</span><span>2</span><span>3</span><span>4</span><span>Pts</span><span>Band</span></div>
+     ${R.map((e,i)=>`<div class="mx-row"><span class="rank">${i+1}</span><span><b>${esc(memName(e.m))}</b></span>${[1,2,3,4].map(t=>`<span class="dot t${t} ${e.f['t'+t]?'on':''}" style="margin:auto">${e.f['t'+t]?'●':''}</span>`).join('')}<span style="font:700 18px var(--serif);text-align:center">${e.pts}</span><span class="band ${bandCls(e.band)}" style="font-size:11px;padding:5px">${e.band}</span></div>`).join('')}
+     <div class="hint" style="margin-top:14px"><b style="color:var(--teal3)">Why 8·4·2·1?</b> The weights are powers of two, so a higher tier always outranks all lower tiers combined (8 &gt; 4+2+1). The nurse can always see the points and challenge them.</div>
+     <div class="hint">Not a clinical risk score. Evidence quality never adds urgency: weak data adds a “verify” action instead.</div>
+   </div>
+  </div>`;
+}
+/* ---------- modals ---------- */
+function modal(html){$('#modal').innerHTML=html;$('#modalBg').classList.add('on')}
+function closeModal(){$('#modalBg').classList.remove('on')}
+function reasonModal(kind,m){
+  const opts=kind==='dismiss'?['Already resolved outside the workbench','Duplicate of another case','Member no longer on my caseload','Priority looks wrong (explain)']:['Waiting for callback window','Waiting for pharmacy or provider','Member asked to be contacted later'];
+  modal(`<h3>${kind==='dismiss'?'Dismiss':'Snooze'} ${esc(memName(m))}?</h3><p style="margin:0;color:var(--muted)">A reason is required. Reasons feed the signal-tuning loop.</p><select id="rsn">${opts.map(o=>`<option>${o}</option>`).join('')}</select><textarea id="rsnT" rows="2" placeholder="Optional note"></textarea><div class="acts"><button class="btn" data-close="1">Cancel</button><button class="btn pri" data-confirm="${kind}:${m}">Confirm</button></div>`);
+}
+function approveModal(m){
+  modal(`<h3>Review &amp; approve the AI draft</h3><p style="margin:0 0 6px;color:var(--muted)">${esc(memName(m))} · nothing is saved until you approve.</p>
+   <label><input type="checkbox" class="ack"> I checked each cited source ID against the evidence timeline</label>
+   <label><input type="checkbox" class="ack"> I removed or corrected anything the sources do not support</label>
+   <label><input type="checkbox" class="ack"> I understand that I am accountable for this note</label>
+   <div class="acts"><button class="btn" data-close="1">Back to edit</button><button class="btn pri" id="signBtn" disabled data-sign="${m}">Approve &amp; sign</button></div>`);
+}
+/* ---------- events ---------- */
+function go(s){S.screen=s;draw()}
+function draw(){chrome();({day:renderDay,ctx:renderCtx,act:renderAct,logic:renderLogic})[S.screen]();
+  if(S.hl){const el=document.getElementById('ev-'+S.hl);if(el)el.scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>{S.hl=null},2500)}}
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('[data-go],[data-pid],[data-sel],[data-band],[data-filter],[data-ev],[data-step],[data-out],[data-call],[data-edit],[data-approve],[data-sign],[data-unsign],[data-task],[data-cite],[data-open],[data-snooze],[data-dismiss],[data-confirm],[data-close],[data-w],[data-wreset]');
+  if(!t){if(ev.target.id==='modalBg')closeModal();return}
+  const d=t.dataset;
+  if(d.go){go(d.go);window.scrollTo(0,0)}
+  else if(d.pid){S.pid=d.pid;S.sel=d.pid;S.filter='All';S.editing=false;draw()}
+  else if(d.sel){S.sel=d.sel;S.pid=d.sel;draw()}
+  else if(d.band){S.band=d.band;draw()}
+  else if(d.filter){S.filter=d.filter;draw()}
+  else if(d.ev){S.tlOpen[d.ev]=!S.tlOpen[d.ev];draw()}
+  else if(d.step!==undefined){S.step=+d.step;draw()}
+  else if(d.out){S.outcomes[S.pid]=d.out;log('Case Manager',`Logged outreach outcome “${d.out}” for ${memName(S.pid)}`,'Outcome recorded');toast('Outcome logged · '+d.out);draw()}
+  else if(d.call){if(t.dataset.blocked){toast('Blocked: caregiver is not authorised. Confirm permission first.');log('System',`Blocked caregiver contact for ${memName(S.pid)}`,'Caregiver not authorised')}else{toast(d.call==='member'?'Call placed through the approved process':'Caregiver contact recorded');log('Case Manager',`Started ${d.call} outreach for ${memName(S.pid)}`,'Approved process')}}
+  else if(d.edit){if(S.editing){S.drafts[S.pid]=$('#draftTa').value;S.editing=false;log('Case Manager',`Edited AI draft for ${memName(S.pid)}`,'Nurse edit')}else S.editing=true;draw()}
+  else if(d.approve){if(S.editing)S.drafts[S.pid]=$('#draftTa').value,S.editing=false;approveModal(S.pid)}
+  else if(d.sign){S.signed[d.sign]='by Case Manager at 08:'+String(20+S.audit.length).padStart(2,'0');S.tasks[d.sign+'-tn']=true;log('Case Manager',`Approved and signed AI note for ${memName(d.sign)}`,'Nurse reviewed sources');closeModal();toast('Note signed. It is now part of the record.');draw()}
+  else if(d.unsign){delete S.signed[S.pid];S.tasks[S.pid+'-tn']=false;log('Case Manager',`Reopened note for ${memName(S.pid)}`,'Nurse reopened');draw()}
+  else if(d.task){S.tasks[d.task]=!S.tasks[d.task];log('Case Manager',`${S.tasks[d.task]?'Completed':'Reopened'} task ${d.task}`,'Task update');draw()}
+  else if(d.cite){S.screen='ctx';S.filter='All';S.hl=d.cite;S.tlOpen[d.cite]=true;draw()}
+  else if(d.open){S.pid=d.open;go('ctx')}
+  else if(d.snooze)reasonModal('snooze',d.snooze);
+  else if(d.dismiss)reasonModal('dismiss',d.dismiss);
+  else if(d.confirm){const[k,m]=d.confirm.split(':');const r=$('#rsn').value;const n=$('#rsnT').value;(k==='dismiss'?S.gone:S.snooze)[m]=true;log('Case Manager',`${k==='dismiss'?'Dismissed':'Snoozed'} ${memName(m)}`,r+(n?': '+n:''));closeModal();toast((k==='dismiss'?'Dismissed':'Snoozed')+' with reason logged');draw()}
+  else if(d.close)closeModal();
+  else if(d.wreset!==undefined){S.w={D:35,V:25,R:20,A:20};draw()}
+});
+document.addEventListener('input',ev=>{const t=ev.target;
+  if(t.dataset.w){S.w[t.dataset.w]=+t.value;const pos=t.selectionStart;draw();const el=document.querySelector(`[data-w=${t.dataset.w}]`);el&&el.focus()}
+  if(t.classList.contains('ack')){$('#signBtn').disabled=![...document.querySelectorAll('.ack')].every(c=>c.checked)}});
+document.addEventListener('change',ev=>{if(ev.target.id==='sortSel'){S.sort=ev.target.value;draw()}});
+$('#audBtn').onclick=()=>{const dr=$('#drawer');dr.classList.toggle('on');$('#audList').innerHTML=S.audit.length?S.audit.map(a=>`<div class="aud"><b>${esc(a.what)}</b><small>${a.t.getHours()}:${String(a.t.getMinutes()).padStart(2,'0')} · ${esc(a.who)} · ${esc(a.why)}</small></div>`).join(''):'<p class="hint">No actions yet. Dismiss a case, log an outcome or sign a note.</p>'};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#drawer').classList.remove('on')}});
+$('#resetBtn').onclick=()=>{S=S0();$('#audN').textContent=0;$('#drawer').classList.remove('on');draw();toast('Demo reset')};
+draw();
+const q=new URLSearchParams(location.search);if(q.get('s')){S.screen=q.get('s');if(q.get('p')){S.pid=q.get('p');S.sel=q.get('p')}draw()}
+</script>
+</body>
+</html>
